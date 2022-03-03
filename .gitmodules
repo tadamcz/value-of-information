@@ -1,0 +1,3 @@
+[submodule "bayes_continuous"]
+	path = bayes_continuous
+	url = git@github.com:tadamcz/bayes-continuous.git
