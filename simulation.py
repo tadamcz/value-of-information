@@ -119,8 +119,8 @@ class Simulation:
 		mean = data_frame['value_of_study'].mean()
 		information = {
 			'Run of simulation': run_number,
-			"Mean study value": mean.round(2),
-			"Standard error of mean": std_err.round(2)
+			"Mean study value": round(mean,2),
+			"Standard error of mean": round(std_err,2),
 		}
 		df = pd.DataFrame([information])
 		print(df)

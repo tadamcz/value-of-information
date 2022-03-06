@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import stats
 
-from main import Simulation
+from simulation import Simulation
 
 prior_mu, prior_sigma = 1, 1
 prior = stats.lognorm(scale=np.exp(prior_mu), s=prior_sigma)
