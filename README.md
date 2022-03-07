@@ -2,7 +2,8 @@
 
 Clone:
 ```shell
-git clone --recurse-submodules git@github.com:tadamcz/value-of-information.git 
+git clone --recurse-submodules git@github.com:tadamcz/value-of-information.git
+cd value-of-information
 ```
 
 Set up virtual environment:
@@ -14,6 +15,6 @@ pip install -r requirements.txt
 
 Run example
 ```shell
-python3 example.py
+python example.py
 ```
 
