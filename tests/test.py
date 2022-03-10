@@ -1,16 +1,17 @@
-import numpy as np
-from scipy import stats
 from unittest.mock import patch
-from simulation import Simulation
-import tests.shared as shared
 
-prior = stats.norm(1, 1)
-study_sample_size = 100
-population_std_dev = 20
+from scipy import stats
+
+import tests.shared as shared
+from simulation import Simulation
 
 
 class TestExtreme:
 	def extreme_bar(self, bar):
+		prior = stats.norm(1, 1)
+		study_sample_size = 100
+		population_std_dev = 20
+
 		with patch('simulation.Posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
 			simulation = Simulation(
