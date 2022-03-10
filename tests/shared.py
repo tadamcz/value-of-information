@@ -1,0 +1,16 @@
+from scipy import stats
+
+import bayes_continuous.utils
+
+def get_location_scale(distribution: stats._distn_infrastructure.rv_frozen):
+	args, kwds = distribution.args, distribution.kwds
+	shapes, loc, scale = distribution.dist._parse_args(*args, **kwds)
+	return loc, scale
+
+def normal_normal_closed_form(normal_prior, normal_likelihood):
+	mu_1, sigma_1 = get_location_scale(normal_prior)
+	mu_2, sigma_2 = normal_likelihood.mu, normal_likelihood.sigma
+	posterior_mu, posterior_sigma = bayes_continuous.utils.normal_normal_closed_form(mu_1, sigma_1, mu_2, sigma_2)
+	return stats.norm(posterior_mu, posterior_sigma)
+
+
