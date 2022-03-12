@@ -19,7 +19,7 @@ class TestExtreme:
 				study_sample_size=study_sample_size,
 				population_std_dev=population_std_dev,
 				bar=bar)
-			assert simulation.run(max_runs=500) == 0
+			assert simulation.run(iterations=500) == 0
 
 	def test_extreme_high_bar(self):
 		"""
