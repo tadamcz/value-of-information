@@ -19,4 +19,11 @@ def normal_normal_closed_form(normal_prior, normal_likelihood):
 	mu_1, sigma_1 = get_location_scale(normal_prior)
 	mu_2, sigma_2 = normal_likelihood.mu, normal_likelihood.sigma
 	posterior_mu, posterior_sigma = bayes_continuous.utils.normal_normal_closed_form(mu_1, sigma_1, mu_2, sigma_2)
-	return stats.norm(posterior_mu, posterior_sigma)
+	posterior = stats.norm(posterior_mu, posterior_sigma)
+
+	# For speed and accuracy, we can replace the method `expect` (numerical integration)
+	# with `mean` (closed form).
+	# Ideally, one would do this with patching/mocking instead of here.
+	posterior.expect = posterior.mean
+
+	return posterior
