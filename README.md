@@ -2,7 +2,7 @@
 
 Clone:
 ```shell
-git clone --recurse-submodules git@github.com:tadamcz/value-of-information.git
+git clone --recurse-submodules https://github.com/tadamcz/value-of-information
 cd value-of-information
 ```
 
