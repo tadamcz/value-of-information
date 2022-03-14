@@ -81,7 +81,7 @@ class Simulation:
 
 			value_of_study = value_w_study - value_w_out_study
 
-			simulation_run = {
+			iteration_output = {
 				'T_i': T_i,
 
 				'posterior_ev': posterior_ev,
@@ -95,11 +95,11 @@ class Simulation:
 
 				'value_of_study': value_of_study,
 			}
-			simulation_run = pd.DataFrame([simulation_run])
+			iteration_output = pd.DataFrame([iteration_output])
 			if self.this_run is None:
-				self.this_run = simulation_run
+				self.this_run = iteration_output
 			else:
-				self.this_run = pd.concat([self.this_run, simulation_run], ignore_index=True)
+				self.this_run = pd.concat([self.this_run, iteration_output], ignore_index=True)
 
 			std_err = self.this_run['value_of_study'].sem()
 			mean = self.this_run['value_of_study'].mean()
@@ -120,11 +120,11 @@ class Simulation:
 		return self.this_run['value_of_study'].mean()
 
 	def print_temporary(self, data_frame):
-		run_number = len(data_frame)
+		iteration_number = len(data_frame)
 		std_err = data_frame['value_of_study'].sem()
 		mean = data_frame['value_of_study'].mean()
 		information = {
-			'Run of simulation': run_number,
+			'Iteration of simulation': iteration_number,
 			"Mean study value": round(mean,2),
 			"Standard error of mean": round(std_err,2),
 		}
