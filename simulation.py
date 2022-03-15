@@ -132,7 +132,8 @@ class Simulation:
 		print(df)
 
 	def print_final(self):
-		with pd.option_context('display.max_columns', None, 'display.max_rows', None, 'display.width', None):
+		# Once the display.max_rows is exceeded, the display.min_rows options determines how many rows are shown in the truncated repr.
+		with pd.option_context('display.max_columns', None, 'display.max_rows', 50, 'display.min_rows', 50, 'display.width', None):
 			print(self.this_run)
 
 		mean_value_of_study = self.this_run['value_of_study'].mean()
