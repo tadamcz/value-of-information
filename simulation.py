@@ -23,9 +23,16 @@ class Simulation:
 		self.sd_B = population_std_dev / np.sqrt(study_sample_size)
 		self.bar = bar
 
-		print(f"Bar = {self.bar}")
-		print(f"Prior EV = {round(self.prior_ev, 2)}")
-		print(f"sd(B) = {self.sd_B}")
+		print(self)
+
+	def __repr__(self):
+		information = {
+			"Bar": self.bar,
+			"Prior EV": self.prior_ev,
+			"Study sample size": self.study_sample_size,
+			"sd(B)": self.sd_B,
+		}
+		return pd.DataFrame([information]).to_string(index=False)
 
 	def run(self, max_iterations=1000, convergence_target=0.1, iterations=None):
 		"""
