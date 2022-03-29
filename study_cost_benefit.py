@@ -4,19 +4,22 @@ from scipy import stats
 
 from simulation import Simulation
 
-# One could put "multiples of GiveDirectly" without changing the meaning
+# For example: "utils", "multiples of GiveDirectly", or "lives saved"
 value_units = "utils"
+
+# For example: "$" or "M$", or "£"
+money_units = "M$"
 
 # Study characteristics
 study_sample_size = 1000
 population_std_dev = 20
-study_cost = 100
+study_cost = 5
 
 # How much money do you have?
-capital = 1_000
+capital = 100
 
 # Prior
-prior_units = f"{value_units} per $ spent"
+prior_units = f"{value_units} per {money_units} spent"
 prior_mu, prior_sigma = 1, 1
 prior = stats.lognorm(scale=np.exp(prior_mu), s=prior_sigma)
 
@@ -44,11 +47,11 @@ net_gain_study = ev_with_study - ev_without_study
 
 result = {
 	f"Best option without study ({prior_units})": no_study_best_option,
-	f"Capital ($)": capital,
+	f"Capital ({money_units})": capital,
 	f"Expected value without study ({value_units})": ev_without_study,
 
 	f"Expected study value ({prior_units})": ev_study_per_usd_spent,
-	f"Capital left after study ($)": capital_after_study,
+	f"Capital left after study ({money_units})": capital_after_study,
 	f"Expected value with study ({value_units})": ev_with_study,
 
 	f"Expected net gain from study ({value_units})": net_gain_study,
