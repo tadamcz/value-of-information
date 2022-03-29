@@ -24,7 +24,7 @@ class Simulation:
 		self.bar = bar
 
 		print(f"Bar = {self.bar}")
-		print(f"Prior EV = {round(self.prior_ev,2)}")
+		print(f"Prior EV = {round(self.prior_ev, 2)}")
 		print(f"sd(B) = {self.sd_B}")
 
 	def run(self, max_iterations=1000, convergence_target=0.1, iterations=None):
@@ -34,21 +34,21 @@ class Simulation:
 		or after `max_iterations`, whichever comes first.
 		"""
 		if iterations is None:
-			self.max_iterations = max_iterations
-			self.convergence_target = convergence_target
+			max_iterations = max_iterations  # no need for self. here (or with self.this run)
+			convergence_target = convergence_target
 		else:
-			self.max_iterations = iterations
-			self.convergence_target = 0  # Can never be reached
+			max_iterations = iterations
+			convergence_target = 0  # Can never be reached
 
-		self.this_run = None
+		this_run = SimulationRun(self)
 
 		# For each iteration i of the simulation, we draw a true value T_i from the prior.
 		# For efficiency, it's better to do this outside the loop
 		# See: https://github.com/scipy/scipy/issues/9394
-		T_is = self.prior_T.rvs(size=self.max_iterations)
+		T_is = self.prior_T.rvs(size=max_iterations)
 
 		i = 0
-		while i < self.max_iterations:
+		while i < max_iterations:
 			T_i = T_is[i]
 
 			# Our study has the point estimator B_i for the parameter T_i.
@@ -97,67 +97,81 @@ class Simulation:
 				'value_of_study': value_of_study,
 			}
 			iteration_output = pd.DataFrame([iteration_output])
-			if self.this_run is None:
-				self.this_run = iteration_output
+			if this_run.iterations_data is None:
+				this_run.iterations_data = iteration_output
 			else:
-				self.this_run = pd.concat([self.this_run, iteration_output], ignore_index=True)
+				this_run.iterations_data = pd.concat([this_run.iterations_data, iteration_output], ignore_index=True)
 
-			std_err = self.this_run['value_of_study'].sem()
-			mean = self.this_run['value_of_study'].mean()
-			if std_err < self.convergence_target * mean:
-				self.print_temporary(self.this_run)
-				print(f"Converged after {len(self.this_run)} iterations!")
+			std_err = this_run.iterations_data['value_of_study'].sem()
+			mean = this_run.iterations_data['value_of_study'].mean()
+			if std_err < convergence_target * mean:
+				this_run.print_intermediate()
+				print(f"Converged after {len(this_run.iterations_data)} iterations!")
 				break
-			if len(self.this_run) % 10 == 0:
-				self.print_temporary(self.this_run)
+			if len(this_run.iterations_data) % 10 == 0:
+				this_run.print_intermediate()
 
 			i += 1
 		else:
 			print(
-				f"Did not converge after {len(self.this_run)} iterations. Standard error of mean study value: {self.this_run['value_of_study'].sem().round(2)}")
+				f"Did not converge after {len(this_run.iterations_data)} iterations. Standard error of mean study value: {this_run.iterations_data['value_of_study'].sem().round(2)}")
 
-		self.print_final()
+		this_run.mean_value_study = this_run.iterations_data['value_of_study'].mean()
+		this_run.print_final()
 
-		return self.this_run['value_of_study'].mean()
-
+		return this_run
 
 	def posterior(self, prior: rv_frozen, likelihood: LikelihoodFunction):
 		return Posterior(prior, likelihood)
 
-	def print_temporary(self, data_frame):
-		iteration_number = len(data_frame)
-		std_err = data_frame['value_of_study'].sem()
-		mean = data_frame['value_of_study'].mean()
+
+class SimulationRun:
+	def __init__(self, simulation: Simulation):
+		self.simulation = simulation
+		self.iterations_data = None
+
+	def print_intermediate(self):
+		if self.iterations_data is None:
+			raise ValueError
+		iteration_number = len(self.iterations_data)
+		std_err = self.iterations_data['value_of_study'].sem()
+		mean = self.iterations_data['value_of_study'].mean()
 		information = {
 			'Iteration of simulation': iteration_number,
-			"Mean study value": round(mean,2),
-			"Standard error of mean": round(std_err,2),
+			"Mean study value": round(mean, 2),
+			"Standard error of mean": round(std_err, 2),
 		}
 		df = pd.DataFrame([information])
 		print(df)
 
 	def print_final(self):
-		# Once the display.max_rows is exceeded, the display.min_rows options determines how many rows are shown in the truncated repr.
-		with pd.option_context('display.max_columns', None, 'display.max_rows', 50, 'display.min_rows', 50, 'display.width', None):
-			print(self.this_run)
+		if self.iterations_data is None:
+			raise ValueError
 
-		mean_value_of_study = self.this_run['value_of_study'].mean()
-		sem_of_study = self.this_run['value_of_study'].sem()
-		iterations = len(self.this_run)
+		# Once the display.max_rows is exceeded, the display.min_rows options determines how many rows are shown in
+		# the truncated repr.
+		with pd.option_context('display.max_columns', None, 'display.max_rows', 50, 'display.min_rows', 50,
+							   'display.width', None):
+			print(self.iterations_data)
+
+		mean_value_of_study = self.iterations_data['value_of_study'].mean()
+		sem_of_study = self.iterations_data['value_of_study'].sem()
+		iterations = len(self.iterations_data)
 
 		if mean_value_of_study < 0:
 			warnings.warn(f"Value of study is negative with {iterations} iterations. Try more iterations?")
 
 		information = {
-			"Mean of posterior expected values across draws": self.this_run['posterior_ev'].mean(),
-			"Fraction of posterior means > bar": (self.this_run['posterior_ev'] > self.bar).sum() / iterations,
+			"Mean of posterior expected values across draws": self.iterations_data['posterior_ev'].mean(),
+			"Fraction of posterior means > bar": (self.iterations_data[
+													  'posterior_ev'] > self.simulation.bar).sum() / iterations,
 			"Mean value of study": mean_value_of_study,
 			"Standard error of mean value of study": sem_of_study,
 		}
 		quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
 		for q in quantiles:
 			key = f"Quantile {q} value of study"
-			information[key] = self.this_run['value_of_study'].quantile(q)
+			information[key] = self.iterations_data['value_of_study'].quantile(q)
 
 		df = pd.DataFrame([information]).T
 		print(df)

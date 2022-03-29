@@ -21,7 +21,7 @@ class TestInfiniteBar:
 				study_sample_size=study_sample_size,
 				population_std_dev=population_std_dev,
 				bar=bar)
-			assert simulation.run(iterations=500) == 0
+			assert simulation.run(iterations=500).mean_value_study == 0
 
 	def test_high(self):
 		"""
@@ -55,18 +55,16 @@ class TestInfiniteSample:
 				study_sample_size=study_sample_size,
 				population_std_dev=population_std_dev,
 				bar=bar)
-			simulation.run(iterations=iterations)
-
-		return simulation
+			return simulation.run(iterations=iterations)
 
 	def test_each_iteration(self):
 		"""
 		If the sample size is essentially infinite, the signal we receive is infinitely precise.
 		So the posterior mean is equal to T_i at each iteration.
 		"""
-		simulation = self.simulate(100)
-		T_is = np.asarray(simulation.this_run['T_i'])
-		expected_values = np.asarray(simulation.this_run['posterior_ev'])
+		simulation_run = self.simulate(100)
+		T_is = np.asarray(simulation_run.iterations_data['T_i'])
+		expected_values = np.asarray(simulation_run.iterations_data['posterior_ev'])
 		assert T_is == pytest.approx(expected_values, rel=1e-5)
 
 	def test_mean(self):
@@ -74,8 +72,8 @@ class TestInfiniteSample:
 		If the posterior mean is equal to T_i at each iteration,
 		the mean of posterior means is equal to the prior mean.
 		"""
-		simulation = self.simulate(5_000)
+		simulation_run = self.simulate(5_000)
 		# A generous tolerance is necessary so the tests finish in a reasonable time
 		absolute_tolerance = self.prior_sd / 10
-		assert simulation.this_run['posterior_ev'].mean() == pytest.approx(self.prior_mean, abs=absolute_tolerance)
+		assert simulation_run.iterations_data['posterior_ev'].mean() == pytest.approx(self.prior_mean, abs=absolute_tolerance)
 
