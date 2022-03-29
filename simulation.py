@@ -1,5 +1,6 @@
-import warnings
+from __future__ import annotations  # This will become the default in Python 3.10.
 
+import warnings
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -34,11 +35,13 @@ class Simulation:
 		}
 		return pd.DataFrame([information]).to_string(index=False)
 
-	def run(self, max_iterations=1000, convergence_target=0.1, iterations=None):
+	def run(self, max_iterations=1000, convergence_target=0.1, iterations=None) -> SimulationRun:
 		"""
-		If `iterations` is set, it will be honored. Otherwise, the simulations stops
-		after `standard_error_of_mean < convergence_target*mean`,
-		or after `max_iterations`, whichever comes first.
+		If `iterations` is not `None`, there will be exactly that many iterations.
+
+		Otherwise, the simulations stops
+		after `standard_error_of_mean < convergence_target*mean` is reached,
+		or after `max_iterations` iterations, whichever comes first.
 		"""
 		if iterations is None:
 			max_iterations = max_iterations  # no need for self. here (or with self.this run)
