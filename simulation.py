@@ -3,8 +3,9 @@ import warnings
 import numpy as np
 import pandas as pd
 from scipy import stats
+from scipy.stats._distn_infrastructure import rv_frozen
 
-from bayes_continuous.likelihood_func import NormalLikelihood
+from bayes_continuous.likelihood_func import NormalLikelihood, LikelihoodFunction
 from bayes_continuous.posterior import Posterior
 
 
@@ -59,7 +60,7 @@ class Simulation:
 
 			likelihood = NormalLikelihood(b_i, sd_B_i)
 
-			posterior = Posterior(self.prior_T, likelihood)
+			posterior = self.posterior(self.prior_T, likelihood)
 
 			posterior_ev = posterior.expect()
 
@@ -118,6 +119,10 @@ class Simulation:
 		self.print_final()
 
 		return self.this_run['value_of_study'].mean()
+
+
+	def posterior(self, prior: rv_frozen, likelihood: LikelihoodFunction):
+		return Posterior(prior, likelihood)
 
 	def print_temporary(self, data_frame):
 		iteration_number = len(data_frame)

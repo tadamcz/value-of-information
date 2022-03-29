@@ -14,7 +14,7 @@ class TestInfiniteBar:
 		study_sample_size = 100
 		population_std_dev = 20
 
-		with patch('simulation.Posterior') as patched_posterior:
+		with patch('simulation.Simulation.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
 			simulation = Simulation(
 				prior=prior,
@@ -48,7 +48,7 @@ class TestInfiniteSample:
 		population_std_dev = 1/10_000
 		bar = 0  # Has no effect
 
-		with patch('simulation.Posterior') as patched_posterior:
+		with patch('simulation.Simulation.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
 			simulation = Simulation(
 				prior=prior,
