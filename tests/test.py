@@ -21,7 +21,7 @@ class TestInfiniteBar:
 				study_sample_size=study_sample_size,
 				population_std_dev=population_std_dev,
 				bar=bar)
-			assert simulation.run(iterations=500).mean_value_study == 0
+			assert simulation.run(iterations=500).mean_value_study() == 0
 
 	def test_high(self):
 		"""

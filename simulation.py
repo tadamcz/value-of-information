@@ -116,7 +116,6 @@ class Simulation:
 			print(
 				f"Did not converge after {len(this_run.iterations_data)} iterations. Standard error of mean study value: {this_run.iterations_data['value_of_study'].sem().round(2)}")
 
-		this_run.mean_value_study = this_run.iterations_data['value_of_study'].mean()
 		this_run.print_final()
 
 		return this_run
@@ -175,3 +174,6 @@ class SimulationRun:
 
 		df = pd.DataFrame([information]).T
 		print(df)
+
+	def mean_value_study(self):
+		return self.iterations_data['value_of_study'].mean()
