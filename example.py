@@ -2,7 +2,7 @@ import numpy as np
 from scipy import stats
 from metalogistic import MetaLogistic
 
-from simulation import Simulation
+from value_of_information import Simulation
 
 prior_ps = [.15, .5, .9]
 prior_xs = [-20, 5, 50]
