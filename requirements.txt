@@ -1,7 +1,0 @@
--e bayes_continuous/ # Installs it as an "editable" package
-numpy~=1.19.5
-scipy~=1.5.4
-pytest~=7.0.1
-sortedcontainers~=2.4.0
-pandas~=1.4.1
-setuptools~=57.0.0
