@@ -37,7 +37,7 @@ sortedcontainers = "^2.4.0"
 
 [package.source]
 type = "git"
-url = "git@github.com:tadamcz/bayes-continuous.git"
+url = "https://github.com/tadamcz/bayes-continuous.git"
 reference = "f0536058240f477703abc006778d7692e44a824f"
 resolved_reference = "f0536058240f477703abc006778d7692e44a824f"
 
@@ -302,7 +302,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8.12,<3.9"
-content-hash = "3a597883bad0a9ba749d04ebaa5022cbb567bd5464daa5a0cb8ec1b0111e0be5"
+content-hash = "89757d1ef04b5aca021fb45941ca2936fbf9bd85a9993ea8e3af2483ecc885c5"
 
 [metadata.files]
 atomicwrites = [
