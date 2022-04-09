@@ -3,6 +3,7 @@ from __future__ import annotations  # This will become the default in Python 3.1
 import warnings
 import numpy as np
 import pandas as pd
+import scipy.stats
 from scipy import stats
 from scipy.stats._distn_infrastructure import rv_frozen
 
@@ -25,7 +26,12 @@ class Simulation:
 		self.bar = bar
 
 	def __repr__(self):
+		if isinstance(self.prior_T, scipy.stats._distn_infrastructure.rv_frozen):
+			prior_fam = self.prior_T.dist.__class__.__name__
+		else:
+			prior_fam = self.prior_T.__repr__()
 		information = {
+			"Prior family": prior_fam,
 			"Bar": self.bar,
 			"Prior EV": self.prior_ev,
 			"Study sample size": self.study_sample_size,
