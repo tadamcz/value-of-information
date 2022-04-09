@@ -24,8 +24,6 @@ class Simulation:
 		self.sd_B = population_std_dev / np.sqrt(study_sample_size)
 		self.bar = bar
 
-		print(self)
-
 	def __repr__(self):
 		information = {
 			"Bar": self.bar,
@@ -43,6 +41,7 @@ class Simulation:
 		after `standard_error_of_mean < convergence_target*mean` is reached,
 		or after `max_iterations` iterations, whichever comes first.
 		"""
+		print(self)
 		if iterations is None:
 			max_iterations = max_iterations  # no need for self. here (or with self.this run)
 			convergence_target = convergence_target
