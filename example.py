@@ -10,10 +10,10 @@ prior_mu, prior_sigma = 1, 1
 inputs = SimulationInputs(
 	prior=stats.lognorm(scale=np.exp(prior_mu), s=prior_sigma),
 	study_sample_size=100,
-	population_std_dev=20,
-	bar=5)
+	population_std_dev=100,
+	bar=6)
 
-simulation_run = SimulationExecutor(inputs).execute(max_iterations=5)
+simulation_run = SimulationExecutor(inputs).execute(max_iterations=10000000)
 
 cb_inputs = CostBenefitInputs(
 	value_units="utils",
