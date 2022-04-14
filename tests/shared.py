@@ -27,3 +27,17 @@ def normal_normal_closed_form(normal_prior, normal_likelihood):
 	posterior.expect = posterior.mean
 
 	return posterior
+
+
+RANDOM_SEEDS = [
+	923357312,
+	820222797,
+	443195760,
+	491312834,
+	878347118,
+	610367622,
+	687819304,
+	281444441,
+	100329066,
+	998566290,
+]
