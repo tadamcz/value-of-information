@@ -1,62 +1,62 @@
-import numpy as np
 import pandas as pd
-from scipy import stats
+from sigfig import round as round_sig
 
-from value_of_information.simulation import SimulationInputs, SimulationExecutor
+from value_of_information.simulation import SimulationRun
 
-# For example: "utils", "multiples of GiveDirectly", or "lives saved"
-value_units = "utils"
 
-# For example: "$" or "M$", or "£"
-money_units = "M$"
+class CostBenefitInputs:
+	def __init__(self, value_units, money_units, capital, study_cost, simulation_run: SimulationRun):
+		"""
+		:param value_units: For example: "utils", "multiples of GiveDirectly", or "lives saved"
+		:param money_units: For example: "$" or "M$", or "£"
+		:param capital: How much money do you have?
+		:param study_cost: Expressed in money_units
+		:param simulation_run: An instance of class `SimulationRun`. It must be such that:
+		- the prior and bar are expressed in value_units per money_units spent
+		"""
+		self.study_cost = study_cost
+		self.simulation_run = simulation_run
+		self.capital = capital
+		self.money_units = money_units
+		self.value_units = value_units
 
-# Study characteristics
-study_sample_size = 1000
-population_std_dev = 20
-study_cost = 5
 
-# How much money do you have?
-capital = 100
+class CostBenefitsExecutor:  # todo add tests
+	def __init__(self, inputs):
+		self.sim_run = inputs.simulation_run
+		self.inputs = inputs
 
-# Prior
-prior_units = f"{value_units} per {money_units} spent"
-prior_mu, prior_sigma = 1, 1
-prior = stats.lognorm(scale=np.exp(prior_mu), s=prior_sigma)
+	def execute(self):
+		prior_ev = self.sim_run.prior.expect()
+		# Cost-effectiveness of money in the absence of the study
+		# Expressed in `prior_units`
+		no_study_best_option = max(self.sim_run.bar, prior_ev)
 
-# Funding "bar", or value of a certain alternative
-# Expressed in `prior_units`
-bar = 5
+		prior_units = f"{self.inputs.value_units} per {self.inputs.money_units} spent"
 
-# Cost-effectiveness of money in the absence of the study
-# Expressed in `prior_units`
-no_study_best_option = max(bar, prior.expect())
+		print(f"Note: you should make sure that the prior (a {self.sim_run.prior_family} with "
+			  f"mean {round_sig(prior_ev, 2)}) and the bar ({self.sim_run.bar}) are expressed in {prior_units}.")
 
-# Simulation
-simulation_run = SimulationExecutor(
-	SimulationInputs(
-		prior=prior,
-		study_sample_size=study_sample_size,
-		population_std_dev=population_std_dev,
-		bar=bar)).execute(max_iterations=100)
+		# Output:
+		ev_study_per_usd_spent = self.sim_run.mean_value_study()
+		capital_after_study = self.inputs.capital - self.inputs.study_cost
+		ev_with_study = capital_after_study * (ev_study_per_usd_spent + no_study_best_option)
+		ev_without_study = self.inputs.capital * no_study_best_option
+		net_gain_study = ev_with_study - ev_without_study
 
-# Output:
-ev_study_per_usd_spent = simulation_run.mean_value_study()
-capital_after_study = capital - study_cost
-ev_with_study = capital_after_study * (ev_study_per_usd_spent + no_study_best_option)
-ev_without_study = capital * no_study_best_option
-net_gain_study = ev_with_study - ev_without_study
+		result = {
+			f"Best option without study ({prior_units})": no_study_best_option,
+			f"Capital ({self.inputs.money_units})": self.inputs.capital,
+			f"Expected value without study ({self.inputs.value_units})": ev_without_study,
 
-result = {
-	f"Best option without study ({prior_units})": no_study_best_option,
-	f"Capital ({money_units})": capital,
-	f"Expected value without study ({value_units})": ev_without_study,
+			f"Expected study value ({prior_units})": ev_study_per_usd_spent,
+			f"Capital left after study ({self.inputs.money_units})": capital_after_study,
+			f"Expected value with study ({self.inputs.value_units})": ev_with_study,
 
-	f"Expected study value ({prior_units})": ev_study_per_usd_spent,
-	f"Capital left after study ({money_units})": capital_after_study,
-	f"Expected value with study ({value_units})": ev_with_study,
+			f"Expected net gain from study ({self.inputs.value_units})": net_gain_study,
+		}
 
-	f"Expected net gain from study ({value_units})": net_gain_study,
-}
+		with pd.option_context('display.width', None):
+			print(pd.DataFrame([result]).T)
 
-with pd.option_context('display.width', None):
-	print(pd.DataFrame([result]).T)
+		return result

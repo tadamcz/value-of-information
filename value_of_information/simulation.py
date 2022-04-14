@@ -10,6 +10,9 @@ from bayes_continuous.posterior import Posterior
 from scipy import stats
 from scipy.stats._distn_infrastructure import rv_frozen
 
+import value_of_information.constants as constants
+from value_of_information.rounding import round_sig
+
 
 class SimulationInputs:
 	def __init__(self, prior, study_sample_size, population_std_dev, bar):
@@ -24,17 +27,21 @@ class SimulationInputs:
 		self.sd_B = population_std_dev / np.sqrt(study_sample_size)
 		self.bar = bar
 
-	def __repr__(self):
+	def prior_family(self):
 		if isinstance(self.prior_T, scipy.stats._distn_infrastructure.rv_frozen):
 			prior_fam = self.prior_T.dist.__class__.__name__
 		else:
-			prior_fam = self.prior_T.__repr__()
+			prior_fam = self.prior_T.__class__.__name__
+		return prior_fam
+
+	def __repr__(self):
+
 		information = {
-			"Prior family": prior_fam,
+			"Prior family": self.prior_family(),
 			"Bar": self.bar,
-			"Prior EV": self.prior_ev,
+			"Prior EV": round_sig(self.prior_ev, constants.ROUND_SIG_FIG),
 			"Study sample size": self.study_sample_size,
-			"sd(B)": self.sd_B,
+			"sd(B)": round_sig(self.sd_B, constants.ROUND_SIG_FIG),
 		}
 		return pd.DataFrame([information]).to_string(index=False)
 
@@ -132,7 +139,8 @@ class SimulationExecutor:
 			i += 1
 		else:
 			print(
-				f"Did not converge after {len(this_run.iterations_data)} iterations. Standard error of mean study value: {this_run.iterations_data['value_of_study'].sem().round(2)}")
+				f"Did not converge after {len(this_run.iterations_data)} iterations. "
+				f"Standard error of mean study value: {round_sig(this_run.iterations_data['value_of_study'].sem())})")
 
 		this_run.print_final()
 
@@ -155,8 +163,8 @@ class SimulationRun:
 		mean = self.iterations_data['value_of_study'].mean()
 		information = {
 			'Iteration of simulation': iteration_number,
-			"Mean study value": round(mean, 2),
-			"Standard error of mean": round(std_err, 2),
+			"Mean study value": round_sig(mean),
+			"Standard error of mean": round_sig(std_err),
 		}
 		df = pd.DataFrame([information])
 		print(df)
@@ -195,3 +203,15 @@ class SimulationRun:
 
 	def mean_value_study(self):
 		return self.iterations_data['value_of_study'].mean()
+
+	@property
+	def bar(self):
+		return self.input.bar
+
+	@property
+	def prior(self):
+		return self.input.prior_T
+
+	@property
+	def prior_family(self):
+		return self.input.prior_family()
