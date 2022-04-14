@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from simulation import Simulation
+from value_of_information.simulation import SimulationInputs, SimulationExecutor
 
 # For example: "utils", "multiples of GiveDirectly", or "lives saved"
 value_units = "utils"
@@ -32,11 +32,12 @@ bar = 5
 no_study_best_option = max(bar, prior.expect())
 
 # Simulation
-simulation_run = Simulation(
-	prior=prior,
-	study_sample_size=study_sample_size,
-	population_std_dev=population_std_dev,
-	bar=bar).run(max_iterations=100)
+simulation_run = SimulationExecutor(
+	SimulationInputs(
+		prior=prior,
+		study_sample_size=study_sample_size,
+		population_std_dev=population_std_dev,
+		bar=bar)).execute(max_iterations=100)
 
 # Output:
 ev_study_per_usd_spent = simulation_run.mean_value_study()

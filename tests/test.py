@@ -5,7 +5,7 @@ import pytest
 from scipy import stats
 
 import tests.shared as shared
-from value_of_information import Simulation
+from value_of_information.simulation import SimulationInputs, SimulationExecutor
 
 class TestInfiniteBar:
 	def simulate(self, bar):
@@ -13,14 +13,14 @@ class TestInfiniteBar:
 		study_sample_size = 100
 		population_std_dev = 20
 
-		with patch('value_of_information.Simulation.posterior') as patched_posterior:
+		with patch('value_of_information.simulation.SimulationExecutor.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
-			simulation = Simulation(
+			inputs = SimulationInputs(
 				prior=prior,
 				study_sample_size=study_sample_size,
 				population_std_dev=population_std_dev,
 				bar=bar)
-			assert simulation.run(iterations=500).mean_value_study() == 0
+			assert SimulationExecutor(inputs).execute(iterations=500).mean_value_study() == 0
 
 	def test_high(self):
 		"""
@@ -47,14 +47,14 @@ class TestInfiniteSample:
 		population_std_dev = 1/10_000
 		bar = 0  # Has no effect
 
-		with patch('value_of_information.Simulation.posterior') as patched_posterior:
+		with patch('value_of_information.simulation.SimulationExecutor.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
-			simulation = Simulation(
+			inputs = SimulationInputs(
 				prior=prior,
 				study_sample_size=study_sample_size,
 				population_std_dev=population_std_dev,
 				bar=bar)
-			return simulation.run(iterations=iterations)
+			return SimulationExecutor(inputs).execute(iterations=iterations)
 
 	def test_each_iteration(self):
 		"""

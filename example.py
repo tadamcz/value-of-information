@@ -14,5 +14,5 @@ simulation = Simulation(
 	study_sample_size=study_sample_size,
 	population_std_dev=population_std_dev,
 	bar=bar)
-simulation.run(max_iterations=100)
+simulation.execute(max_iterations=100)
 
