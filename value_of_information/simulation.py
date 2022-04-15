@@ -51,7 +51,7 @@ class SimulationExecutor:
 		self.input = input
 		self.do_explicit = force_explicit or (not self.input.likelihood_is_normal)
 
-	def execute(self, max_iterations=1000, convergence_target=0.05, iterations=None) -> SimulationRun:
+	def execute(self, max_iterations=None, convergence_target=0.05, iterations=None) -> SimulationRun:
 		"""
 		If `iterations` is not `None`, there will be exactly that many iterations.
 
@@ -61,6 +61,11 @@ class SimulationExecutor:
 		"""
 		print(self.input)
 		print(f"Explicit simulation: {self.do_explicit}")
+		if max_iterations is None:
+			if self.do_explicit:
+				max_iterations = 1000
+			else:
+				max_iterations = 100_000
 		if iterations is None:
 			max_iterations = max_iterations  # no need for self. here (or with self.this run)
 			convergence_target = convergence_target
