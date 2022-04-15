@@ -12,7 +12,7 @@ inputs = SimulationInputs(
 	sd_B=10,
 	bar=6)
 
-simulation_run = SimulationExecutor(inputs).execute(max_iterations=10000000)
+simulation_run = SimulationExecutor(inputs).execute()
 
 cb_inputs = CostBenefitInputs(
 	value_units="utils",
