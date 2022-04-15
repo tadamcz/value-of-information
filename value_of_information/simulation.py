@@ -207,52 +207,51 @@ class SimulationExecutor:
 		posterior_ev(b, ...) is increasing in b, so it has only one zero, and we can use
 		Brent (1973)'s method as implemented in `scipy.optimize.brentq`.
 
-		How do we set the bracketing interval for Brent's method?
-
-		We know that
-		```
-		prior_ev < posterior_ev(b, ...) < b  if prior_ev<b, or
-		prior_ev > posterior_ev(b, ...) > b if prior_ev > b
-		```
-		hence:
-		```
-		prior_ev - bar < posterior_ev(b, ...) - bar < b-bar     if prior_ev<b, or
-		prior_ev - bar > posterior_ev(b, ...) - bar > b-bar     if prior_ev > b
-		```
-
-		So, it suffices to look between `prior_ev-bar` and `b-bar`.
-
-		:return:
+		posterior_ev(b, ...) being increasing in b also has the consequence that we can
+		set the bracketing interval for Brent's method dynamically.
 		"""
 
 		def f_to_solve(b):
-			print(f"Trying b={b}")
 			likelihood = NormalLikelihood(b, self.input.sd_B)
 			posterior = self.posterior(self.input.prior_T, likelihood)
 			posterior_ev = posterior.expect()
+			print(f"Trying b≈{round_sig(b)}, which gives E[T|b]≈{round_sig(posterior_ev)}")
 			return posterior_ev-self.input.bar
 
 
-		p_99_T = self.input.prior_T.ppf(1- 1/100)
-		p_9999_b = stats.norm(p_99_T, self.input.sd_B).ppf(1- 1/100)
+		p_0_1_T = self.input.prior_T.ppf(0.1)
+		p_0_9_T = self.input.prior_T.ppf(0.9)
 
-		p_0_01_T = self.input.prior_T.ppf(1 / 100)
-		p_0_0001_b = stats.norm(p_0_01_T, self.input.sd_B).ppf(1 / 100)
+		left = p_0_1_T
+		right = p_0_9_T
 
-		bound_candidates = [self.input.prior_ev-self.input.bar,p_0_0001_b,p_9999_b]
+		# Setting the bracketing interval dynamically.
+		# The approach is loosely inspired by scipy's `ppf`, see below
+		# https://github.com/scipy/scipy/blob/b5d8bab88af61d61de09641243848df63380a67f/scipy/stats/_distn_infrastructure.py#L1826-L1844
+		additive_step = 2
+		FACTOR = 2
+		while f_to_solve(left) > 0.:
+			additive_step = additive_step*FACTOR
+			left = left - additive_step
 
-		bound_left = min(bound_candidates)
-		bound_right = max(bound_candidates)
+		additive_step = 2
+		while f_to_solve(right) < 0.:
+			additive_step = additive_step*FACTOR
+			right = right + additive_step
+		# f_to_solve(left) and f_to_solve(right) now have opposite signs
 
-		print(f"Running brentq between b={bound_left} and b={bound_right}...")
-		x0, root_results = optimize.brentq(f_to_solve, a=bound_left, b=bound_right, full_output=True)
+		print(f"Running brentq between b={round_sig(left)} and b={round_sig(right)}   ---->")
+		x0, root_results = optimize.brentq(f_to_solve, a=left, b=right, full_output=True)
 		print(f"brentq results for threshold value of b:\n{root_results}")
 
 		return x0
 
 
 	def posterior(self, prior: rv_frozen, likelihood: LikelihoodFunction):
-		return Posterior(prior, likelihood)
+		posterior = Posterior(prior, likelihood)
+		if np.isnan(posterior.expect()):
+			raise ValueError(f"Posterior expected value is NaN for {prior}, {likelihood}")
+		return posterior
 
 
 class SimulationRun:
@@ -281,7 +280,7 @@ class SimulationRun:
 
 		# Once the display.max_rows is exceeded, the display.min_rows options determines how many rows are shown in
 		# the truncated repr.
-		with pd.option_context('display.max_columns', None, 'display.max_rows', 50, 'display.min_rows', 50,
+		with pd.option_context('display.max_columns', None, 'display.max_rows', 20, 'display.min_rows', 20,
 							   'display.width', None):
 			print(self.iterations_data)
 

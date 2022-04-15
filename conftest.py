@@ -1,10 +1,32 @@
+import os
+
 import numpy as np
 import pytest
 
 import tests.shared
 
 
-@pytest.fixture(autouse=True, params=tests.shared.RANDOM_SEEDS, scope='session')
+def pytest_addoption(parser):
+	parser.addoption(
+		"--cmdopt", action="store", default="type1", help="my option: type1 or type2"
+	)
+
+
+@pytest.fixture
+def cmdopt(request):
+	return request.config.getoption("--cmdopt")
+
+
+if os.environ.get("USE_MULTIPLE_SEEDS", False):
+	seeds = tests.shared.RANDOM_SEEDS
+else:
+	seeds = [tests.shared.RANDOM_SEEDS[0]]
+
+
+def seed_idfn(fixture_value):
+	return f"seed={fixture_value}"
+
+@pytest.fixture(autouse=True, params=seeds, ids=seed_idfn, scope='session')
 def random_seed(request):
 	"""
 	autouse:

@@ -66,13 +66,35 @@ class TestInfiniteSample:
 		expected_values = np.asarray(simulation_run.iterations_data['posterior_ev'])
 		assert T_is == pytest.approx(expected_values, rel=1e-5)
 
-	def test_mean(self):
+	def mean_helper(self, iterations, relative_tol):
 		"""
 		If the posterior mean is equal to T_i at each iteration,
 		the mean of posterior means is equal to the prior mean.
 		"""
-		simulation_run = self.simulate(5000)
-		# A generous tolerance is necessary so the tests finish in a reasonable time
-		absolute_tolerance = self.prior_sd / 10
-		assert simulation_run.iterations_data['posterior_ev'].mean() == pytest.approx(self.prior_mean, abs=absolute_tolerance)
+		simulation_run = self.simulate(iterations)
+		print(simulation_run.iterations_data['posterior_ev'].mean(), self.prior_mean)
+		assert simulation_run.iterations_data['posterior_ev'].mean() == pytest.approx(self.prior_mean, rel=relative_tol)
+
+	def test_mean(self):
+		"""
+		A generous tolerance is necessary so the tests finish in a reasonable time
+		"""
+		self.mean_helper(iterations=5000, relative_tol=5/100)
+
+	# extra_slow below
+
+	@pytest.mark.extra_slow
+	def test_mean_strict(self):
+		last_assertion_error = None
+		iterations = 10_000
+		while iterations < 1_000_000:
+			try:
+				self.mean_helper(iterations=iterations, relative_tol=1e-4)
+			except AssertionError as err:
+				last_assertion_error = err
+				iterations *= 2
+			else:
+				return
+
+		raise last_assertion_error
 
