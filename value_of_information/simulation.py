@@ -59,7 +59,7 @@ class SimulationExecutor:
 		self.input = input
 		self.do_explicit = force_explicit or (not self.input.likelihood_is_normal)
 
-	def execute(self, max_iterations=None, convergence_target=0.05, iterations=None) -> SimulationRun:
+	def execute(self, max_iterations=None, convergence_target=0.1, iterations=None) -> SimulationRun:
 		"""
 		If `iterations` is not `None`, there will be exactly that many iterations.
 
