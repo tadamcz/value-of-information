@@ -112,7 +112,7 @@ class SimulationExecutor:
 			mean = this_run.iterations_data['value_of_study'].mean()
 			if std_err < convergence_target * mean:
 				this_run.print_intermediate()
-				print(f"Converged after {len(this_run.iterations_data)} iterations!")
+				print(f"Converged after {len(this_run.iterations_data)} simulation iterations!")
 				break
 			if len(this_run.iterations_data) % print_intermediate_every == 0:
 				this_run.print_intermediate()
@@ -120,7 +120,7 @@ class SimulationExecutor:
 			i += 1
 		else:
 			print(
-				f"Did not converge after {len(this_run.iterations_data)} iterations. "
+				f"Did not converge after {len(this_run.iterations_data)} simulation iterations. "
 				f"Standard error of mean study value: {round_sig(this_run.iterations_data['value_of_study'].sem())})")
 
 		this_run.print_final()
@@ -240,9 +240,9 @@ class SimulationExecutor:
 			right = right + additive_step
 		# f_to_solve(left) and f_to_solve(right) now have opposite signs
 
-		print(f"Running brentq between b={round_sig(left)} and b={round_sig(right)}   ---->")
+		print(f"Running equation solver between b={round_sig(left)} and b={round_sig(right)}   ---->")
 		x0, root_results = optimize.brentq(f_to_solve, a=left, b=right, full_output=True)
-		print(f"brentq results for threshold value of b:\n{root_results}")
+		print(f"Equation solver results for threshold value of b:\n{root_results}\n")
 
 		return x0
 
@@ -289,7 +289,7 @@ class SimulationRun:
 		iterations = len(self.iterations_data)
 
 		if mean_value_of_study < 0:
-			warnings.warn(f"Value of study is negative with {iterations} iterations. Try more iterations?")
+			warnings.warn(f"Value of study is negative with {iterations} simulation iterations. Try more iterations?")
 
 		information = {
 			"Mean value of study": mean_value_of_study,
