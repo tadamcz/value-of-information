@@ -15,16 +15,24 @@ from value_of_information.rounding import round_sig
 
 
 class SimulationInputs:
-	def __init__(self, prior, study_sample_size, population_std_dev, bar):
+	def __init__(self, prior, bar, study_sample_size=None, population_std_dev=None, sd_B=None):
 		"""
 		We can call T the parameter over which we want to conduct inference,
 		and B the random variable we observe. Realisations of B can be denoted b.
 		"""
 		self.prior_T = prior
 		self.prior_ev = self.prior_T.expect()
+		if study_sample_size is None and population_std_dev is None:
+			if sd_B is None:
+				raise ValueError
+		else:
+			if study_sample_size is None or population_std_dev is None:
+				raise ValueError
+			sd_B = population_std_dev / np.sqrt(study_sample_size)
+
+		self.sd_B = sd_B
 		self.study_sample_size = study_sample_size
 		self.population_std_dev = population_std_dev  # Assumed to be known
-		self.sd_B = population_std_dev / np.sqrt(study_sample_size)
 		self.bar = bar
 		self.likelihood_is_normal = True  # Always the case for now
 
