@@ -108,7 +108,7 @@ class TestThresholdUpdate:
 	@pytest.mark.extra_slow
 	@pytest.mark.parametrize('simulation_inputs', random_inputs(10), ids=simulation_input_idfn)
 	@pytest.mark.parametrize('relative_tolerance', (1 / 10, 1 / 100, 1 / 1000), ids=rel_idfn)
-	@pytest.mark.parametrize('iterations', np.geomspace(5_000, 100_000, dtype=int, num=5), ids=iter_idfn)
+	@pytest.mark.parametrize('iterations', np.geomspace(5_000, 1_000_000, dtype=int, num=5), ids=iter_idfn)
 	def test_random(self, simulation_inputs, relative_tolerance, iterations):
 		self.helper(inputs=simulation_inputs, relative_tolerance=relative_tolerance, iterations=iterations)
 
