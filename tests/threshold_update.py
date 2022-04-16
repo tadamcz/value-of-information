@@ -1,4 +1,4 @@
-import random
+import contextlib
 from unittest.mock import patch
 
 import numpy as np
@@ -6,13 +6,12 @@ import pytest
 from scipy import stats
 
 import tests.shared as shared
-from value_of_information.rounding import round_sig
+from tests.shared import simulation_input_idfn, rel_idfn, iter_idfn
 from value_of_information.simulation import SimulationInputs, SimulationExecutor
 
 
-def const_inputs():
+def const_inputs(linsp_n):
 	inputs = []
-	linsp_n = 3
 	for pop_stdev in np.linspace(.5, 5, num=linsp_n):
 		prior = stats.norm(1.23, 5)
 		i = SimulationInputs(
@@ -51,17 +50,24 @@ def const_inputs():
 	return inputs
 
 
-def simulation_input_id_func(inputs: SimulationInputs):
-	pri_loc, pri_scale = shared.get_location_scale(inputs.prior_T)
-	return f"bar={inputs.bar}, E[T]~={round_sig(inputs.prior_ev)}, T_loc={pri_loc}, T_scale={pri_scale}, sd(B)~={inputs.sd_B}"
+@contextlib.contextmanager
+def temp_seed(seed):
+	state = np.random.get_state()
+	np.random.seed(seed)
+	try:
+		yield
+	finally:
+		np.random.set_state(state)
 
-
-def random_inputs():
+def random_inputs(n):
 	inputs = []
-	for _ in range(100):
-		prior_mean, prior_sd = random.randint(-100, 100), random.randint(1, 50)
-		pop_sd = random.randint(1, 50)
-		distance_to_bar = random.randint(-100, 100)
+	if n > len(shared.RANDOM_SEEDS_1000):
+		raise ValueError
+	for i in range(n):
+		with temp_seed(shared.RANDOM_SEEDS_1000[i]):
+			prior_mean, prior_sd = np.random.randint(-100, 100), np.random.randint(1, 50)
+			pop_sd = np.random.randint(1, 50)
+			distance_to_bar = np.random.randint(-20, 20)
 		bar = prior_mean + distance_to_bar
 
 		kwargs = {
@@ -95,37 +101,20 @@ class TestThresholdUpdate:
 			assert explicit.mean_value_study() == pytest.approx(
 				threshold.mean_value_study(), rel=relative_tolerance)
 
-	@pytest.mark.parametrize('simulation_inputs', const_inputs(), ids=simulation_input_id_func)
-	def test(self, simulation_inputs):
+	@pytest.mark.parametrize('simulation_inputs', const_inputs(linsp_n=3), ids=simulation_input_idfn)
+	def test_linsp(self, simulation_inputs):
 		self.helper(inputs=simulation_inputs)
 
-	# extra_slow below
-
-	def iterations_helper(self, inputs, relative_tolerance, max_iterations):
-		"""
-		todo consider refactoring this into `shared.py`
-		"""
-		last_assertion_error = None
-		min_iterations = 8_000
-		iterations = min_iterations
-		while iterations < max_iterations:
-			try:
-				self.helper(inputs=inputs, iterations=iterations, relative_tolerance=relative_tolerance)
-			except AssertionError as err:
-				last_assertion_error = err
-				iterations *= 2
-			else:
-				return
-		raise last_assertion_error
-
-	@pytest.mark.parametrize('simulation_inputs', random_inputs(), ids=simulation_input_id_func)
 	@pytest.mark.extra_slow
-	def test_random(self, simulation_inputs):
-		self.iterations_helper(inputs=simulation_inputs, relative_tolerance=1e-4, max_iterations=1e5)
+	@pytest.mark.parametrize('simulation_inputs', random_inputs(10), ids=simulation_input_idfn)
+	@pytest.mark.parametrize('relative_tolerance', (1 / 10, 1 / 100, 1 / 1000), ids=rel_idfn)
+	@pytest.mark.parametrize('iterations', np.geomspace(5_000, 100_000, dtype=int, num=5), ids=iter_idfn)
+	def test_random(self, simulation_inputs, relative_tolerance, iterations):
+		self.helper(inputs=simulation_inputs, relative_tolerance=relative_tolerance, iterations=iterations)
 
 	@pytest.mark.extra_slow
-	def test_strict(self):
-		inputs = const_inputs()[0]
-		with patch('value_of_information.simulation.SimulationRun.print_intermediate') as patched_print:
-			patched_print.side_effect = lambda: None
-			self.iterations_helper(inputs=inputs, relative_tolerance=1e-4, max_iterations=10e6)
+	@pytest.mark.parametrize('simulation_inputs', const_inputs(linsp_n=3), ids=simulation_input_idfn)
+	@pytest.mark.parametrize('relative_tolerance', (1 / 10, 1 / 100, 1 / 1000), ids=rel_idfn)
+	@pytest.mark.parametrize('iterations', np.geomspace(5_000, 1_000_000, dtype=int, num=5), ids=iter_idfn)
+	def test_linsp_extra(self, simulation_inputs, relative_tolerance, iterations):
+		self.helper(inputs=simulation_inputs, relative_tolerance=relative_tolerance, iterations=iterations)

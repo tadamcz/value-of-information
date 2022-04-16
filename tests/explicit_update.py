@@ -5,6 +5,7 @@ import pytest
 from scipy import stats
 
 import tests.shared as shared
+from tests.shared import simulation_input_idfn, rel_idfn, iter_idfn
 from value_of_information.simulation import SimulationInputs, SimulationExecutor
 
 class TestInfiniteBar:
@@ -66,35 +67,25 @@ class TestInfiniteSample:
 		expected_values = np.asarray(simulation_run.iterations_data['posterior_ev'])
 		assert T_is == pytest.approx(expected_values, rel=1e-5)
 
-	def mean_helper(self, iterations, relative_tol):
+	def mean_helper(self, relative_tolerance, iterations):
 		"""
 		If the posterior mean is equal to T_i at each iteration,
 		the mean of posterior means is equal to the prior mean.
 		"""
 		simulation_run = self.simulate(iterations)
 		print(simulation_run.iterations_data['posterior_ev'].mean(), self.prior_mean)
-		assert simulation_run.iterations_data['posterior_ev'].mean() == pytest.approx(self.prior_mean, rel=relative_tol)
+		assert simulation_run.iterations_data['posterior_ev'].mean() == pytest.approx(self.prior_mean, rel=relative_tolerance)
 
 	def test_mean(self):
 		"""
 		A generous tolerance is necessary so the tests finish in a reasonable time
 		"""
-		self.mean_helper(iterations=5000, relative_tol=5/100)
+		self.mean_helper(iterations=5000, relative_tolerance=5 / 100)
 
 	# extra_slow below
 
 	@pytest.mark.extra_slow
-	def test_mean_strict(self):
-		last_assertion_error = None
-		iterations = 10_000
-		while iterations < 1_000_000:
-			try:
-				self.mean_helper(iterations=iterations, relative_tol=1e-4)
-			except AssertionError as err:
-				last_assertion_error = err
-				iterations *= 2
-			else:
-				return
-
-		raise last_assertion_error
-
+	@pytest.mark.parametrize('relative_tolerance', (1 / 10, 1 / 100, 1 / 1000), ids=rel_idfn)
+	@pytest.mark.parametrize('iterations', np.geomspace(5_000, 1_000_000, dtype=int, num=1), ids=iter_idfn)
+	def test_mean_strict(self, relative_tolerance, iterations):
+		self.mean_helper(relative_tolerance=relative_tolerance, iterations=iterations)
