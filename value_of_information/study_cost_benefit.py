@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pandas as pd
 from sigfig import round as round_sig
 
@@ -5,28 +7,32 @@ from value_of_information.simulation import SimulationRun
 
 
 class CostBenefitInputs:
-	def __init__(self, value_units, money_units, capital, study_cost, simulation_run: SimulationRun):
+	def __init__(self, value_units, money_units, capital, study_cost):
 		"""
 		:param value_units: For example: "utils", "multiples of GiveDirectly", or "lives saved"
 		:param money_units: For example: "$" or "M$", or "£"
 		:param capital: How much money do you have?
 		:param study_cost: Expressed in money_units
-		:param simulation_run: An instance of class `SimulationRun`. It must be such that:
-		- the prior and bar are expressed in value_units per money_units spent
 		"""
 		self.study_cost = study_cost
-		self.simulation_run = simulation_run
 		self.capital = capital
 		self.money_units = money_units
 		self.value_units = value_units
 
 
 class CostBenefitsExecutor:  # todo add tests
-	def __init__(self, inputs):
-		self.sim_run = inputs.simulation_run
+	def __init__(self, inputs, simulation_run: Optional[SimulationRun]=None):
+		"""
+		:param simulation_run: An instance of class `SimulationRun`. It must be such that:
+		- the prior and bar are expressed in value_units per money_units spent
+		"""
+		self.sim_run = simulation_run
 		self.inputs = inputs
 
 	def execute(self):
+		print("\n")
+		if self.sim_run is None:
+			raise ValueError
 		prior_ev = self.sim_run.prior.expect()
 		# Cost-effectiveness of money in the absence of the study
 		# Expressed in `prior_units`

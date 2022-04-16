@@ -19,8 +19,7 @@ cb_inputs = CostBenefitInputs(
 	money_units="M$",
 	capital=100,
 	study_cost=5,
-	simulation_run=simulation_run
 )
 
-CostBenefitsExecutor(cb_inputs).execute()
+CostBenefitsExecutor(inputs=cb_inputs, simulation_run=simulation_run).execute()
 
