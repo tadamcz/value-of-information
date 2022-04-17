@@ -86,6 +86,6 @@ class TestInfiniteSample:
 
 	@pytest.mark.extra_slow
 	@pytest.mark.parametrize('relative_tolerance', (1 / 10, 1 / 100, 1 / 1000), ids=rel_idfn)
-	@pytest.mark.parametrize('iterations', np.geomspace(5_000, 1_000_000, dtype=int, num=1), ids=iter_idfn)
+	@pytest.mark.parametrize('iterations', np.geomspace(5_000, 1_000_000, dtype=int, num=5), ids=iter_idfn)
 	def test_mean_strict(self, relative_tolerance, iterations):
 		self.mean_helper(relative_tolerance=relative_tolerance, iterations=iterations)
