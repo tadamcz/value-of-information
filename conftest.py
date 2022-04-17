@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import pytest
 
@@ -17,16 +15,11 @@ def cmdopt(request):
 	return request.config.getoption("--cmdopt")
 
 
-if os.environ.get("USE_MULTIPLE_SEEDS", False):
-	seeds = tests.shared.RANDOM_SEEDS
-else:
-	seeds = [tests.shared.RANDOM_SEEDS[0]]
-
-
 def seed_idfn(fixture_value):
 	return f"seed={fixture_value}"
 
-@pytest.fixture(autouse=True, params=seeds, ids=seed_idfn, scope='session')
+
+@pytest.fixture(autouse=True, params=tests.shared.RANDOM_SEEDS, ids=seed_idfn, scope='session')
 def random_seed(request):
 	"""
 	autouse:

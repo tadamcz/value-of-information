@@ -20,9 +20,8 @@ poetry run python example.py
 # Run tests
 ```shell
 # At the root
-poetry run USE_MULTIPLE_SEEDS=1 pytest -n auto
+poetry run pytest -n auto
 ```
-(If you are using PyCharm, you can instead use the run configuration `.run/pytest in tests.run.xml`)
 
 # Extra-slow tests
 Achieving high precision means some tests take very long to run (the standard error is proportional to 1/sqrt(n) which declines very slowly). To achieve high precision, these tests may need to run for many hours. They can be run (e.g. in the cloud) by executing `pytest_extra_slow.sh`. 
