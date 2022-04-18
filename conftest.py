@@ -1,14 +1,14 @@
 import numpy as np
 import pytest
 
-import tests.shared
+import tests.seeds as seeds
 
 
 def seed_idfn(fixture_value):
 	return f"seed={fixture_value}"
 
 
-@pytest.fixture(autouse=True, params=tests.shared.RANDOM_SEEDS, ids=seed_idfn, scope='session')
+@pytest.fixture(autouse=True, params=seeds.RANDOM_SEEDS, ids=seed_idfn, scope='session')
 def random_seed(request):
 	"""
 	autouse:

@@ -5,7 +5,6 @@ import pytest
 from scipy import stats
 
 import tests.shared as shared
-from tests.shared import simulation_input_idfn, rel_idfn, iter_idfn
 from value_of_information.simulation import SimulationInputs, SimulationExecutor
 
 class TestInfiniteBar:
@@ -85,7 +84,7 @@ class TestInfiniteSample:
 	# extra_slow below
 
 	@pytest.mark.extra_slow
-	@pytest.mark.parametrize('relative_tolerance', (1 / 10, 1 / 100, 1 / 1000), ids=rel_idfn)
-	@pytest.mark.parametrize('iterations', np.geomspace(5_000, 1_000_000, dtype=int, num=5), ids=iter_idfn)
+	@pytest.mark.parametrize('relative_tolerance', (1 / 10, 1 / 100, 1 / 1000), ids=shared.rel_idfn)
+	@pytest.mark.parametrize('iterations', np.geomspace(5_000, 1_000_000, dtype=int, num=5), ids=shared.iter_idfn)
 	def test_mean_strict(self, relative_tolerance, iterations):
 		self.mean_helper(relative_tolerance=relative_tolerance, iterations=iterations)
