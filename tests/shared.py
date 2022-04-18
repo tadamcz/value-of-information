@@ -49,9 +49,14 @@ def iter_idfn(p):
 	return f"iter={p}"
 
 
-def const_inputs(linsp_n) -> List[SimulationInputs]:
+def norm_norm_linsp_inputs(n) -> List[SimulationInputs]:
+	"""
+	Normal prior and normal likelihood function. Linearly spaced parameters.
+	"""
+	if n<6:
+		raise ValueError
 	inputs = []
-	for sd_B in np.linspace(.5, 5, num=linsp_n):
+	for sd_B in np.linspace(.5, 5, num=n//3):
 		prior = stats.norm(1.23, 5)
 		i = SimulationInputs(
 			prior=prior,
@@ -60,7 +65,7 @@ def const_inputs(linsp_n) -> List[SimulationInputs]:
 		)
 		inputs.append(i)
 
-	for prior_stdev in np.linspace(3, 10, num=linsp_n):
+	for prior_stdev in np.linspace(3, 10, num=n//3):
 		prior = stats.norm(1.23, prior_stdev)
 		i = SimulationInputs(
 			prior=prior,
@@ -69,7 +74,7 @@ def const_inputs(linsp_n) -> List[SimulationInputs]:
 		)
 		inputs.append(i)
 
-	for distance_to_bar in np.linspace(-5, 5, num=linsp_n):
+	for distance_to_bar in np.linspace(-5, 5, num=n//3):
 		# These distances are quite pitiful, but we can be much more aggressive
 		# in the `extra_slow` tests.
 		bar = 1
@@ -96,7 +101,12 @@ def temp_seed(seed):
 		np.random.set_state(state)
 
 
-def inputs_from_seed(n) -> List[SimulationInputs]:
+def norm_norm_inputs_from_seed(n) -> List[SimulationInputs]:
+	"""
+	Normal prior and normal likelihood function.
+
+	Pseudo-randomly generated parameters, with fixed seeds for reproducibility.
+	"""
 	inputs = []
 	if n > len(RANDOM_SEEDS_1000):
 		raise ValueError
