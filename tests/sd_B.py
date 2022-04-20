@@ -3,7 +3,9 @@ import pytest
 from scipy import stats
 
 from tests import shared
-from tests.input_generators import NormNormGenerator, LogNormNormGenerator
+import tests.param_generators.norm_norm as gen_norm_norm
+import tests.param_generators.lognorm_norm as gen_log_norm_norm
+
 from value_of_information.simulation import SimulationExecutor, SimulationInputs
 
 class Test_sdB:
@@ -30,7 +32,7 @@ class Test_sdB:
 		self.helper(central_simulation_inputs, iterations=2_000, num_sds=2)
 
 	@pytest.mark.extra_slow
-	@pytest.mark.parametrize('central_simulation_inputs', NormNormGenerator.from_seed(10)+LogNormNormGenerator.linsp_mu(5), ids=shared.simulation_input_idfn)
+	@pytest.mark.parametrize('central_simulation_inputs', gen_log_norm_norm.linsp_mu(3) + gen_norm_norm.from_seed(10), ids=shared.simulation_input_idfn)
 	def test_extra_slow(self, central_simulation_inputs):
 		self.helper(central_simulation_inputs, iterations=50_000, num_sds=5)
 

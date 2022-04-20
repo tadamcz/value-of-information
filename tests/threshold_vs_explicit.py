@@ -3,7 +3,8 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
-from tests.input_generators import NormNormGenerator
+import tests.param_generators.norm_norm as gen_norm_norm
+
 import tests.shared as shared
 from value_of_information.simulation import SimulationExecutor
 
@@ -29,19 +30,19 @@ class TestThresholdvsExplicit:
 			assert explicit.mean_value_study() == pytest.approx(
 				threshold.mean_value_study(), rel=relative_tolerance)
 
-	@pytest.mark.parametrize('simulation_inputs', NormNormGenerator.linsp(9), ids=shared.simulation_input_idfn)
+	@pytest.mark.parametrize('simulation_inputs', (9), ids=shared.simulation_input_idfn)
 	def test_linsp(self, simulation_inputs):
 		self.helper(inputs=simulation_inputs)
 
 	@pytest.mark.extra_slow
-	@pytest.mark.parametrize('simulation_inputs', NormNormGenerator.from_seed(10), ids=shared.simulation_input_idfn)
+	@pytest.mark.parametrize('simulation_inputs', gen_norm_norm.from_seed(10), ids=shared.simulation_input_idfn)
 	@pytest.mark.parametrize('relative_tolerance', (1 / 10, 1 / 100, 1 / 1000), ids=shared.rel_idfn)
 	@pytest.mark.parametrize('iterations', np.geomspace(5_000, 1_000_000, dtype=int, num=5), ids=shared.iter_idfn)
 	def test_random(self, simulation_inputs, relative_tolerance, iterations):
 		self.helper(inputs=simulation_inputs, relative_tolerance=relative_tolerance, iterations=iterations)
 
 	@pytest.mark.extra_slow
-	@pytest.mark.parametrize('simulation_inputs', NormNormGenerator.linsp(9), ids=shared.simulation_input_idfn)
+	@pytest.mark.parametrize('simulation_inputs', gen_norm_norm.linsp(9), ids=shared.simulation_input_idfn)
 	@pytest.mark.parametrize('relative_tolerance', (1 / 10, 1 / 100, 1 / 1000), ids=shared.rel_idfn)
 	@pytest.mark.parametrize('iterations', np.geomspace(5_000, 1_000_000, dtype=int, num=5), ids=shared.iter_idfn)
 	def test_linsp_extra(self, simulation_inputs, relative_tolerance, iterations):
