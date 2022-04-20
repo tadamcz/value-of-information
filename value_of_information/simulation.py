@@ -9,6 +9,7 @@ from bayes_continuous.likelihood_func import NormalLikelihood, LikelihoodFunctio
 from bayes_continuous.posterior import Posterior
 from scipy import stats, optimize
 from scipy.stats._distn_infrastructure import rv_frozen
+from sortedcontainers import SortedDict
 
 import value_of_information.constants as constants
 from value_of_information.rounding import round_sig
@@ -225,11 +226,16 @@ class SimulationExecutor:
 		set the bracketing interval for Brent's method dynamically.
 		"""
 
+		posterior_ev_sorted = SortedDict()  # Sorted by key
 		def f_to_solve(b):
 			likelihood = NormalLikelihood(b, self.input.sd_B)
 			posterior = self.posterior(self.input.prior_T, likelihood)
 			posterior_ev = posterior.expect()
 			print(f"Trying b≈{round_sig(b, 5)}, which gives E[T|b]≈{round_sig(posterior_ev, 5)}")
+			posterior_ev_sorted[b] = posterior_ev
+			values_by_key = list(posterior_ev_sorted.values())
+			if not values_by_key == sorted(values_by_key):
+				raise RuntimeError(f"Found non-increasing sequence of E[T|b]: {values_by_key}. An integral was likely computed incorrectly.")
 			return posterior_ev-self.input.bar
 
 
