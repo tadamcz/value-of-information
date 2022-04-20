@@ -21,7 +21,7 @@ class TestInfiniteBar:
 				study_sample_size=study_sample_size,
 				population_std_dev=population_std_dev,
 				bar=bar)
-			assert SimulationExecutor(inputs).execute(iterations=10_000).mean_value_study() == 0
+			assert SimulationExecutor(inputs, print_every=1e9).execute(iterations=10_000).mean_value_study() == 0
 
 	def test_high(self):
 		"""
@@ -52,7 +52,7 @@ class TestInfiniteSample:
 				prior=prior,
 				sd_B=1e-12,
 				bar=bar)
-			return SimulationExecutor(inputs, force_explicit=True).execute(iterations=iterations)
+			return SimulationExecutor(inputs, force_explicit=True, print_every=1e9).execute(iterations=iterations)
 
 	def test_each_iteration(self):
 		"""

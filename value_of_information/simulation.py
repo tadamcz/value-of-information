@@ -55,9 +55,10 @@ class SimulationInputs:
 		return pd.DataFrame([information]).to_string(index=False)
 
 class SimulationExecutor:
-	def __init__(self, input: SimulationInputs, force_explicit=False):
+	def __init__(self, input: SimulationInputs, force_explicit=False, print_every=None):
 		self.input = input
 		self.do_explicit = force_explicit or (not self.input.likelihood_is_normal)
+		self.print_every = print_every
 
 	def execute(self, max_iterations=None, convergence_target=0.1, iterations=None) -> SimulationRun:
 		"""
@@ -89,10 +90,10 @@ class SimulationExecutor:
 		T_is = self.input.prior_T.rvs(size=max_iterations)
 
 		if not self.do_explicit:
-			print_intermediate_every = 1000
+			print_intermediate_every = self.print_every or 1000
 			threshold_b = self.solve_for_threshold_b()
 		else:
-			print_intermediate_every = 10
+			print_intermediate_every = self.print_every or 10
 
 		i = 0
 		while i < max_iterations:
