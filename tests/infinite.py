@@ -7,6 +7,7 @@ from scipy import stats
 import tests.shared as shared
 from value_of_information.simulation import SimulationInputs, SimulationExecutor
 
+
 class TestInfiniteBar:
 	def simulate(self, bar):
 		prior = stats.norm(1, 1)
@@ -20,7 +21,7 @@ class TestInfiniteBar:
 				study_sample_size=study_sample_size,
 				population_std_dev=population_std_dev,
 				bar=bar)
-			assert SimulationExecutor(inputs).execute(iterations=1_000).mean_value_study() == 0
+			assert SimulationExecutor(inputs).execute(iterations=10_000).mean_value_study() == 0
 
 	def test_high(self):
 		"""
@@ -43,16 +44,13 @@ class TestInfiniteSample:
 
 	def simulate(self, iterations):
 		prior = stats.norm(self.prior_mean, self.prior_sd)
-		study_sample_size = 1e12
-		population_std_dev = 1/10_000
 		bar = 0  # Has no effect
 
 		with patch('value_of_information.simulation.SimulationExecutor.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
 			inputs = SimulationInputs(
 				prior=prior,
-				study_sample_size=study_sample_size,
-				population_std_dev=population_std_dev,
+				sd_B=1e-12,
 				bar=bar)
 			return SimulationExecutor(inputs, force_explicit=True).execute(iterations=iterations)
 
@@ -64,7 +62,7 @@ class TestInfiniteSample:
 		simulation_run = self.simulate(100)
 		T_is = np.asarray(simulation_run.iterations_data['T_i'])
 		expected_values = np.asarray(simulation_run.iterations_data['posterior_ev'])
-		assert T_is == pytest.approx(expected_values, rel=1e-5)
+		assert T_is == pytest.approx(expected_values, rel=1/100)
 
 	def mean_helper(self, relative_tolerance, iterations):
 		"""
@@ -79,12 +77,10 @@ class TestInfiniteSample:
 		"""
 		A generous tolerance is necessary so the tests finish in a reasonable time
 		"""
-		self.mean_helper(iterations=5000, relative_tolerance=5 / 100)
+		self.mean_helper(iterations=5_000, relative_tolerance=5 / 100)
 
 	# extra_slow below
 
 	@pytest.mark.extra_slow
-	@pytest.mark.parametrize('relative_tolerance', (1 / 10, 1 / 100, 1 / 1000), ids=shared.rel_idfn)
-	@pytest.mark.parametrize('iterations', np.geomspace(5_000, 1_000_000, dtype=int, num=5), ids=shared.iter_idfn)
-	def test_mean_strict(self, relative_tolerance, iterations):
-		self.mean_helper(relative_tolerance=relative_tolerance, iterations=iterations)
+	def test_mean_strict(self):
+		self.mean_helper(relative_tolerance=1 / 100, iterations=50_000)

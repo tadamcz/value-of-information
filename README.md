@@ -24,7 +24,7 @@ poetry run pytest -n auto
 ```
 
 # Extra-slow tests
-Achieving high precision means some tests take very long to run (the standard error is proportional to 1/sqrt(n) which declines very slowly). To achieve high precision, these tests may need to run for many hours. They can be run (e.g. in the cloud) by executing `pytest_extra_slow.sh`. 
+Achieving high precision means some tests take very long to run (the standard error is proportional to 1/sqrt(n) which declines very slowly). To achieve high precision, these tests may need to run for many hours. They can be run (e.g. in the cloud) by executing `pytest_with_extra_slow.sh`. 
 
 # Mathematics
 When the likelihood function is normal (i.e., it arises from a normally distributed observation), we make use of the following fact to speed up computation: the expected value of the posterior is increasing in the value of the observation.

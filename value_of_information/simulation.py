@@ -228,7 +228,7 @@ class SimulationExecutor:
 			likelihood = NormalLikelihood(b, self.input.sd_B)
 			posterior = self.posterior(self.input.prior_T, likelihood)
 			posterior_ev = posterior.expect()
-			print(f"Trying b≈{round_sig(b)}, which gives E[T|b]≈{round_sig(posterior_ev)}")
+			print(f"Trying b≈{round_sig(b, 5)}, which gives E[T|b]≈{round_sig(posterior_ev, 5)}")
 			return posterior_ev-self.input.bar
 
 
@@ -239,10 +239,9 @@ class SimulationExecutor:
 		right = p_0_9_T
 
 		# Setting the bracketing interval dynamically.
-		# The approach is loosely inspired by scipy's `ppf`, see below
-		# https://github.com/scipy/scipy/blob/b5d8bab88af61d61de09641243848df63380a67f/scipy/stats/_distn_infrastructure.py#L1826-L1844
-		additive_step = 2
 		FACTOR = 2
+
+		additive_step = 2
 		while f_to_solve(left) > 0.:
 			additive_step = additive_step*FACTOR
 			left = left - additive_step
@@ -253,7 +252,7 @@ class SimulationExecutor:
 			right = right + additive_step
 		# f_to_solve(left) and f_to_solve(right) now have opposite signs
 
-		print(f"Running equation solver between b={round_sig(left)} and b={round_sig(right)}   ---->")
+		print(f"Running equation solver between b={round_sig(left, 5)} and b={round_sig(right, 5)}   ---->")
 		x0, root_results = optimize.brentq(f_to_solve, a=left, b=right, full_output=True)
 		print(f"Equation solver results for threshold value of b:\n{root_results}\n")
 

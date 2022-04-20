@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pytest
 
@@ -8,7 +10,10 @@ def seed_idfn(fixture_value):
 	return f"seed={fixture_value}"
 
 
-@pytest.fixture(autouse=True, params=seeds.RANDOM_SEEDS, ids=seed_idfn, scope='session')
+n_random_seeds = int(os.environ.get('N_RAND_SEED', 1))
+
+
+@pytest.fixture(autouse=True, params=seeds.RANDOM_SEEDS[:n_random_seeds], ids=seed_idfn, scope='session')
 def random_seed(request):
 	"""
 	autouse:

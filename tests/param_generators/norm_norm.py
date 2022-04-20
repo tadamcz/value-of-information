@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 from scipy import stats
 
-from tests.seeds import RANDOM_SEEDS_1000
+from tests.seeds import RANDOM_SEEDS
 from value_of_information.simulation import SimulationInputs
 
 
@@ -56,7 +56,7 @@ def linsp_prior_sd(n) -> List[SimulationInputs]:
 
 def linsp_sd_B(n):
 	inputs = []
-	for sd_B in np.linspace(.5, 5, num=n):
+	for sd_B in np.linspace(3, 10, num=n):
 		prior = stats.norm(PRIOR_MEAN, PRIOR_SD)
 		i = SimulationInputs(
 			prior=prior,
@@ -72,19 +72,19 @@ def from_seed(n) -> List[SimulationInputs]:
 	Pseudo-randomly generated parameters, with fixed seeds for reproducibility.
 	"""
 	inputs = []
-	if n > len(RANDOM_SEEDS_1000):
+	if n > len(RANDOM_SEEDS):
 		raise ValueError
 	for i in range(n):
-		with temp_seed(RANDOM_SEEDS_1000[i]):
-			prior_mean, prior_sd = np.random.randint(-100, 100), np.random.randint(1, 50)
-			pop_sd = np.random.randint(1, 50)
-			distance_to_bar = np.random.randint(-20, 20)
+		with temp_seed(RANDOM_SEEDS[i]):
+			prior_mean = -1  # Makes little difference
+			prior_sd = np.random.randint(1, 10)
+			sd_B = np.random.randint(1, 10)
+			distance_to_bar = np.random.randint(-10*prior_sd, 10*prior_sd)
 		bar = prior_mean + distance_to_bar
 
 		kwargs = {
 			'prior': stats.norm(prior_mean, prior_sd),
-			'study_sample_size': 100,
-			'population_std_dev': pop_sd,
+			'sd_B': sd_B,
 			'bar': bar,
 		}
 		inputs.append(SimulationInputs(**kwargs))
