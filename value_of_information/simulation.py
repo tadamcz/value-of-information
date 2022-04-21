@@ -90,6 +90,11 @@ class SimulationExecutor:
 		# See: https://github.com/scipy/scipy/issues/9394
 		T_is = self.input.prior_T.rvs(size=max_iterations)
 
+		# For each iteration i of the simulation, we draw a
+		# distance (b_i-T_i), outside the loop for efficiency.
+		# Note: this won't work for every likelihood function.
+		b_i_distances = stats.norm(0, self.input.sd_B).rvs(size=max_iterations)
+
 		if not self.do_explicit:
 			print_intermediate_every = self.print_every or 1000
 			threshold_b = self.solve_for_threshold_b()
@@ -104,8 +109,12 @@ class SimulationExecutor:
 			# sd(B_i) is a constant
 			sd_B_i = self.input.sd_B
 
-			# We draw an estimate b_i from Normal(T_i,sd(B_i)).
-			b_i = stats.norm(T_i, sd_B_i).rvs()
+			# We draw an estimate b_i from Normal(T_i,sd(B_i))
+			# But for efficiency, this is done outside the loop.
+			# The lines below are equivalent to
+			# `b_i = stats.norm(T_i, sd_B_i).rvs(size=1)`
+			b_i_distance = b_i_distances[i]
+			b_i = T_i + b_i_distance
 
 			iteration_kwargs = {
 				'b_i':b_i,
