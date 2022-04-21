@@ -38,8 +38,8 @@ sortedcontainers = "^2.4.0"
 [package.source]
 type = "git"
 url = "https://github.com/tadamcz/bayes-continuous.git"
-reference = "f0536058240f477703abc006778d7692e44a824f"
-resolved_reference = "f0536058240f477703abc006778d7692e44a824f"
+reference = "5733329d782bb2c142b83c4469cb7bb096a5cb24"
+resolved_reference = "5733329d782bb2c142b83c4469cb7bb096a5cb24"
 
 [[package]]
 name = "colorama"
@@ -318,7 +318,7 @@ toml = ["setuptools (>=42)"]
 
 [[package]]
 name = "sigfig"
-version = "1.3.0"
+version = "1.3.1"
 description = "Python library for rounding numbers (with expected results)"
 category = "main"
 optional = false
@@ -354,7 +354,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8.12,<3.9"
-content-hash = "ad599964c1c1877793d7027d62997fbd903928fc67315d615566049b3085285a"
+content-hash = "75f636b0b1aaac8456bde5c161d9fdcfcda9bd39a307b913ee4234a274ea3351"
 
 [metadata.files]
 atomicwrites = [
@@ -623,8 +623,8 @@ setuptools-scm = [
     {file = "setuptools_scm-6.4.2.tar.gz", hash = "sha256:6833ac65c6ed9711a4d5d2266f8024cfa07c533a0e55f4c12f6eff280a5a9e30"},
 ]
 sigfig = [
-    {file = "sigfig-1.3.0-py3-none-any.whl", hash = "sha256:e8eaf90505ac0c0ea9e33f8b929c92df92b53b445576d19cb9e619e6d075f3e5"},
-    {file = "sigfig-1.3.0.tar.gz", hash = "sha256:8f3bd76df49fa93fc865e257dd992198dee32ba73f55cf7e1ea996c8916aa883"},
+    {file = "sigfig-1.3.1-py3-none-any.whl", hash = "sha256:d5961ce0858203a92e8e4baedd4c373616ff7e851ccdf5c9f13094a6a6b83ec0"},
+    {file = "sigfig-1.3.1.tar.gz", hash = "sha256:691cd3bac90b0ab0da87cb267bd7b72b46c35b4085f6ecdf5f62ff0faf861cb9"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
