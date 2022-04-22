@@ -49,9 +49,9 @@ class SimulationInputs:
 		information = {
 			"Prior family": self.prior_family(),
 			"Bar": self.bar,
-			"Prior EV": round_sig(self.prior_ev, constants.ROUND_SIG_FIG),
-			"Study sample size": self.study_sample_size,
+			"E[T]": round_sig(self.prior_ev, constants.ROUND_SIG_FIG),
 			"sd(B)": round_sig(self.sd_B, constants.ROUND_SIG_FIG),
+			"Study sample size": self.study_sample_size,
 		}
 		return pd.DataFrame([information]).to_string(index=False)
 
@@ -69,7 +69,9 @@ class SimulationExecutor:
 		after `standard_error_of_mean < convergence_target*mean` is reached,
 		or after `max_iterations` iterations, whichever comes first.
 		"""
+		self.print_explainer()
 		print(self.input)
+		print("\n")
 		print(f"Explicit simulation: {self.do_explicit}")
 		if max_iterations is None:
 			if self.do_explicit:
@@ -81,7 +83,7 @@ class SimulationExecutor:
 			convergence_target = convergence_target
 		else:
 			max_iterations = iterations
-			convergence_target = 0  # Can never be reached
+			convergence_target = None
 
 		this_run = SimulationRun(self.input, self)
 
@@ -101,6 +103,11 @@ class SimulationExecutor:
 		else:
 			print_intermediate_every = self.print_every or 10
 
+		if convergence_target is None:
+			print(f"The simulation will run for exactly {iterations} iterations.")
+		else:
+			print(f"The simulation will stop after `standard_error_of_mean < {convergence_target}*mean` is reached, "
+				  f"or after {max_iterations} iterations, whichever comes first.")
 		i = 0
 		while i < max_iterations:
 			T_i = T_is[i]
@@ -148,7 +155,7 @@ class SimulationExecutor:
 			i += 1
 		else:
 			print(
-				f"Did not converge after {len(this_run)} simulation iterations. "
+				f"Simulation ended after {len(this_run)} iterations. "
 				f"Standard error of mean study value: {round_sig(this_run.iterations_data['value_of_study'].sem())})")
 
 		this_run.print_final()
@@ -211,8 +218,8 @@ class SimulationExecutor:
 			'T_i': T_i,
 			'b_i': b_i,
 
-			'posterior_ev': posterior_ev,
-			'pr_beat_bar': pr_beat_bar,
+			'E[T|b_i]': posterior_ev,
+			'P(T|b_i>bar)': pr_beat_bar,
 
 			'w_study': decision_w_study,
 			'w_out_study': decision_w_out_study,
@@ -285,6 +292,13 @@ class SimulationExecutor:
 			raise ValueError(f"Posterior expected value is NaN for {prior}, {likelihood}")
 		return posterior
 
+	def print_explainer(self):
+		print("We call T the parameter over which we want to conduct inference, "
+			  "and B the random variable we observe. Realisations of B are denoted b. "
+			  "Currently, only normally distributed B is supported, where T is the mean "
+			  "of B.\n")
+
+
 
 class SimulationRun:
 	def __init__(self, inputs: SimulationInputs, executor: SimulationExecutor):
@@ -317,6 +331,11 @@ class SimulationRun:
 		# the truncated repr.
 		with pd.option_context('display.max_columns', None, 'display.max_rows', 20, 'display.min_rows', 20,
 							   'display.width', None):
+			print(f"\nFor each iteration i of the simulation, we draw a true value T_i from the prior, and we draw "
+				  "an estimate b_i from Normal(T_i,sd(B)). The decision-maker cannot observe T_i, their subjective "
+				  "posterior expected value is E[T|b_i]. E[T|b_i] and P(T|b_i > bar) are only computed if "
+				  "running an 'explicit' simulation. 'fallback' is the option whose value is `bar`, and 'candidate' "
+				  "is the uncertain option.")
 			print(self.iterations_data)
 
 		mean_value_of_study = self.iterations_data['value_of_study'].mean()
@@ -333,9 +352,9 @@ class SimulationRun:
 
 		if self.do_explicit:
 			information.update({
-				"Mean of posterior expected values across draws": self.iterations_data['posterior_ev'].mean(),
+				"Mean of posterior expected values across draws": self.iterations_data['E[T|b_i]'].mean(),
 				"Fraction of posterior means > bar":
-					(self.iterations_data['posterior_ev'] > self.input.bar).sum() / iterations,
+					(self.iterations_data['E[T|b_i]'] > self.input.bar).sum() / iterations,
 			})
 
 		quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]

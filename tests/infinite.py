@@ -61,7 +61,7 @@ class TestInfiniteSample:
 		"""
 		simulation_run = self.simulate(100)
 		T_is = np.asarray(simulation_run.iterations_data['T_i'])
-		expected_values = np.asarray(simulation_run.iterations_data['posterior_ev'])
+		expected_values = np.asarray(simulation_run.iterations_data['E[T|b_i]'])
 		assert T_is == pytest.approx(expected_values, rel=1/100)
 
 	def mean_helper(self, relative_tolerance, iterations):
@@ -70,8 +70,8 @@ class TestInfiniteSample:
 		the mean of posterior means is equal to the prior mean.
 		"""
 		simulation_run = self.simulate(iterations)
-		print(simulation_run.iterations_data['posterior_ev'].mean(), self.prior_mean)
-		assert simulation_run.iterations_data['posterior_ev'].mean() == pytest.approx(self.prior_mean, rel=relative_tolerance)
+		print(simulation_run.iterations_data['E[T|b_i]'].mean(), self.prior_mean)
+		assert simulation_run.iterations_data['E[T|b_i]'].mean() == pytest.approx(self.prior_mean, rel=relative_tolerance)
 
 	def test_mean(self):
 		"""
