@@ -62,7 +62,7 @@ class CostBenefitsExecutor:  # todo add tests
 			f"Expected net gain from study ({self.inputs.value_units})": net_gain_study,
 		}
 
-		with pd.option_context('display.width', None):
+		with pd.option_context('display.width', None, 'display.max_colwidth', None):
 			print(pd.DataFrame([result]).T)
 
 		return result
