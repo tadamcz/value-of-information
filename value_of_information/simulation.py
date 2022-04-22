@@ -77,7 +77,7 @@ class SimulationExecutor:
 			else:
 				max_iterations = 100_000
 		if iterations is None:
-			max_iterations = max_iterations  # no need for self. here (or with self.this run)
+			max_iterations = max_iterations
 			convergence_target = convergence_target
 		else:
 			max_iterations = iterations
