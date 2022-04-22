@@ -130,14 +130,18 @@ class SimulationExecutor:
 			if this_run.iterations_data is None:
 				this_run.iterations_data = iteration_output
 			else:
+				# todo: avoid the use of pd.concat, which is inefficient
 				this_run.iterations_data = pd.concat([this_run.iterations_data, iteration_output], ignore_index=True)
 
-			std_err = this_run.iterations_data['value_of_study'].sem()
-			mean = this_run.iterations_data['value_of_study'].mean()
-			if std_err < convergence_target * mean:
-				this_run.print_intermediate()
-				print(f"Converged after {len(this_run.iterations_data)} simulation iterations!")
-				break
+			# Repeatedly calling `.sem()` is expensive
+			if iterations is None and len(this_run.iterations_data) % 10 == 0:
+				std_err = this_run.iterations_data['value_of_study'].sem()
+				mean = this_run.iterations_data['value_of_study'].mean()
+				if std_err < convergence_target * mean:
+					this_run.print_intermediate()
+					print(f"Converged after {len(this_run.iterations_data)} simulation iterations!")
+					break
+
 			if len(this_run.iterations_data) % print_intermediate_every == 0:
 				this_run.print_intermediate()
 
