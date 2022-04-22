@@ -134,21 +134,21 @@ class SimulationExecutor:
 				this_run.iterations_data = pd.concat([this_run.iterations_data, iteration_output], ignore_index=True)
 
 			# Repeatedly calling `.sem()` is expensive
-			if iterations is None and len(this_run.iterations_data) % 10 == 0:
+			if iterations is None and len(this_run) % 10 == 0:
 				std_err = this_run.iterations_data['value_of_study'].sem()
 				mean = this_run.iterations_data['value_of_study'].mean()
 				if std_err < convergence_target * mean:
 					this_run.print_intermediate()
-					print(f"Converged after {len(this_run.iterations_data)} simulation iterations!")
+					print(f"Converged after {len(this_run)} simulation iterations!")
 					break
 
-			if len(this_run.iterations_data) % print_intermediate_every == 0:
+			if len(this_run) % print_intermediate_every == 0:
 				this_run.print_intermediate()
 
 			i += 1
 		else:
 			print(
-				f"Did not converge after {len(this_run.iterations_data)} simulation iterations. "
+				f"Did not converge after {len(this_run)} simulation iterations. "
 				f"Standard error of mean study value: {round_sig(this_run.iterations_data['value_of_study'].sem())})")
 
 		this_run.print_final()
@@ -291,6 +291,9 @@ class SimulationRun:
 		self.input = inputs
 		self.iterations_data = None
 		self.do_explicit = executor.do_explicit
+		
+	def __len__(self):
+		return len(self.iterations_data)
 
 	def print_intermediate(self):
 		if self.iterations_data is None:
