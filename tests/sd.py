@@ -38,14 +38,14 @@ class Test_sdB:
 	@pytest.mark.extra_slow
 	@pytest.mark.parametrize('central_simulation_inputs', gen_log_norm_norm.linsp_mu(3), ids=shared.simulation_input_idfn)
 	def test_extra_slow_lognorm_prior(self, central_simulation_inputs):
-		self.helper(central_simulation_inputs, iterations=100_000, num_sds=3)
+		self.helper(central_simulation_inputs, iterations=75_000, num_sds=3)
 
 	@pytest.mark.extra_slow
-	@pytest.mark.parametrize('central_simulation_inputs', gen_norm_norm.linsp(6) + gen_norm_norm.from_seed(10), ids=shared.simulation_input_idfn)
+	@pytest.mark.parametrize('central_simulation_inputs', gen_norm_norm.linsp(6) + gen_norm_norm.from_seed(3), ids=shared.simulation_input_idfn)
 	def test_extra_slow_normal_prior(self, central_simulation_inputs):
 		with patch('value_of_information.simulation.SimulationExecutor.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
-			self.helper(central_simulation_inputs, iterations=100_000, num_sds=3)
+			self.helper(central_simulation_inputs, iterations=75_000, num_sds=3)
 
 
 class Test_sd_prior_T:
@@ -74,6 +74,6 @@ class Test_sd_prior_T:
 		self.helper(central_simulation_inputs, iterations=2_000, num_sds=2)
 
 	@pytest.mark.extra_slow
-	@pytest.mark.parametrize('central_simulation_inputs', gen_norm_norm.linsp(6)+gen_norm_norm.from_seed(10), ids=shared.simulation_input_idfn)
+	@pytest.mark.parametrize('central_simulation_inputs', gen_norm_norm.linsp(6)+gen_norm_norm.from_seed(3), ids=shared.simulation_input_idfn)
 	def test_extra_slow(self, central_simulation_inputs):
-		self.helper(central_simulation_inputs, iterations=100_000, num_sds=3)
+		self.helper(central_simulation_inputs, iterations=75_000, num_sds=3)
