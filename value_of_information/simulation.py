@@ -268,12 +268,12 @@ class SimulationExecutor:
 		# Setting the bracketing interval dynamically.
 		FACTOR = 2
 
-		additive_step = 2
+		additive_step = 1
 		while f_to_solve(left) > 0.:
 			additive_step = additive_step*FACTOR
 			left = left - additive_step
 
-		additive_step = 2
+		additive_step = 1
 		while f_to_solve(right) < 0.:
 			additive_step = additive_step*FACTOR
 			right = right + additive_step
