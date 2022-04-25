@@ -36,7 +36,7 @@ class Test_sdB:
 		self.helper(central_simulation_inputs, iterations=2_000, num_sds=2)
 
 	@pytest.mark.extra_slow
-	@pytest.mark.parametrize('central_simulation_inputs', gen_log_norm_norm.linsp_mu(3), ids=shared.simulation_input_idfn)
+	@pytest.mark.parametrize('central_simulation_inputs', gen_log_norm_norm.linsp(4), ids=shared.simulation_input_idfn)
 	def test_extra_slow_lognorm_prior(self, central_simulation_inputs):
 		self.helper(central_simulation_inputs, iterations=75_000, num_sds=3)
 

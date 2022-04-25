@@ -25,9 +25,7 @@ def linsp(n) -> List[SimulationInputs]:
 
 def linsp_distance_to_bar(n) -> List[SimulationInputs]:
 	inputs = []
-	for distance_to_bar in np.linspace(-5, 5, num=n):
-		# These distances are quite pitiful, but we can be much more aggressive
-		# in the `extra_slow` tests.
+	for distance_to_bar in np.linspace(-PRIOR_SD, PRIOR_SD, num=n):
 		bar = 1
 		prior_mean = bar + distance_to_bar
 
@@ -79,7 +77,7 @@ def from_seed(n) -> List[SimulationInputs]:
 			prior_mean = -1  # Makes little difference
 			prior_sd = np.random.randint(1, 10)
 			sd_B = np.random.randint(1, 10)
-			distance_to_bar = np.random.randint(-10*prior_sd, 10*prior_sd)
+			distance_to_bar = np.random.randint(-2.5*prior_sd, 2.5*prior_sd)
 		bar = prior_mean + distance_to_bar
 
 		kwargs = {

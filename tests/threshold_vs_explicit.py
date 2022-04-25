@@ -27,14 +27,14 @@ class TestThresholdvsExplicit:
 	@pytest.mark.parametrize('simulation_inputs',
 							gen_norm_norm.linsp_distance_to_bar(2), ids=shared.simulation_input_idfn)
 	def test(self, simulation_inputs):
-		self.helper(inputs=simulation_inputs, iterations=12_000, relative_tolerance=15 / 100)
+		self.helper(inputs=simulation_inputs, iterations=15_000, relative_tolerance=15 / 100)
 
 	@pytest.mark.extra_slow
 	@pytest.mark.parametrize('simulation_inputs', gen_norm_norm.linsp(6), ids=shared.simulation_input_idfn)
 	def test_linsp(self, simulation_inputs):
-		self.helper(inputs=simulation_inputs, relative_tolerance=1 / 100, iterations=1_000_000)
+		self.helper(inputs=simulation_inputs, iterations=500_000, relative_tolerance=1 / 100)
 
 	@pytest.mark.extra_slow
 	@pytest.mark.parametrize('simulation_inputs', gen_norm_norm.from_seed(6), ids=shared.simulation_input_idfn)
 	def test_seed(self, simulation_inputs):
-		self.helper(inputs=simulation_inputs, relative_tolerance=1 / 100, iterations=1_000_000)
+		self.helper(inputs=simulation_inputs, iterations=500_000, relative_tolerance=1 / 100)
