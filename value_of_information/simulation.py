@@ -10,6 +10,7 @@ from bayes_continuous.posterior import Posterior
 from scipy import stats, optimize
 from scipy.stats._distn_infrastructure import rv_frozen
 from sortedcontainers import SortedDict
+import statistics
 
 import value_of_information.constants as constants
 from value_of_information.rounding import round_sig
@@ -133,17 +134,12 @@ class SimulationExecutor:
 			else:
 				iteration_output = self.iteration_threshold_update(threshold_b=threshold_b, **iteration_kwargs)
 
-			iteration_output = pd.DataFrame([iteration_output])
-			if this_run.iterations_data is None:
-				this_run.iterations_data = iteration_output
-			else:
-				# todo: avoid the use of pd.concat, which is inefficient
-				this_run.iterations_data = pd.concat([this_run.iterations_data, iteration_output], ignore_index=True)
+			this_run.append(iteration_output)
 
 			# Repeatedly calling `.sem()` is expensive
 			if iterations is None and len(this_run) % 10 == 0:
-				std_err = this_run.iterations_data['value_of_study'].sem()
-				mean = this_run.iterations_data['value_of_study'].mean()
+				std_err = this_run.standard_error_mean_value_study()
+				mean = this_run.mean_value_study()
 				if std_err < convergence_target * mean:
 					this_run.print_intermediate()
 					print(f"Converged after {len(this_run)} simulation iterations!")
@@ -156,7 +152,7 @@ class SimulationExecutor:
 		else:
 			print(
 				f"Simulation ended after {len(this_run)} iterations. "
-				f"Standard error of mean study value: {round_sig(this_run.iterations_data['value_of_study'].sem())})")
+				f"Standard error of mean study value: {round_sig(this_run.standard_error_mean_value_study())})")
 
 		this_run.print_final()
 
@@ -303,18 +299,25 @@ class SimulationExecutor:
 class SimulationRun:
 	def __init__(self, inputs: SimulationInputs, executor: SimulationExecutor):
 		self.input = inputs
-		self.iterations_data = None
+		self.iterations_data = []
 		self.do_explicit = executor.do_explicit
 		
 	def __len__(self):
 		return len(self.iterations_data)
 
+	def append(self, iteration: dict):
+		self.iterations_data.append(iteration)
+
+	def mean_value_study(self):
+		return statistics.fmean([i['value_of_study'] for i in self.iterations_data])
+
+	def standard_error_mean_value_study(self):
+		return scipy.stats.sem([i['value_of_study'] for i in self.iterations_data])
+
 	def print_intermediate(self):
-		if self.iterations_data is None:
-			raise ValueError
 		iteration_number = len(self.iterations_data)
-		std_err = self.iterations_data['value_of_study'].sem()
-		mean = self.iterations_data['value_of_study'].mean()
+		std_err = self.standard_error_mean_value_study()
+		mean = self.mean_value_study()
 		information = {
 			'Iteration of simulation': iteration_number,
 			"Mean study value": round_sig(mean),
@@ -323,23 +326,25 @@ class SimulationRun:
 		df = pd.DataFrame([information])
 		print(df)
 
-	def print_final(self):
-		if self.iterations_data is None:
-			raise ValueError
+	def get_column(self, key):
+		df = pd.DataFrame(self.iterations_data)
+		return df[key]
 
+	def print_final(self):
+
+		print(f"\nFor each iteration i of the simulation, we draw a true value T_i from the prior, and we draw "
+			  "an estimate b_i from Normal(T_i,sd(B)). The decision-maker cannot observe T_i, their subjective "
+			  "posterior expected value is E[T|b_i]. E[T|b_i] and P(T|b_i > bar) are only computed if "
+			  "running an 'explicit' simulation. 'fallback' is the option whose value is `bar`, and 'candidate' "
+			  "is the uncertain option.")
 		# Once the display.max_rows is exceeded, the display.min_rows options determines how many rows are shown in
 		# the truncated repr.
 		with pd.option_context('display.max_columns', None, 'display.max_rows', 20, 'display.min_rows', 20,
 							   'display.width', None):
-			print(f"\nFor each iteration i of the simulation, we draw a true value T_i from the prior, and we draw "
-				  "an estimate b_i from Normal(T_i,sd(B)). The decision-maker cannot observe T_i, their subjective "
-				  "posterior expected value is E[T|b_i]. E[T|b_i] and P(T|b_i > bar) are only computed if "
-				  "running an 'explicit' simulation. 'fallback' is the option whose value is `bar`, and 'candidate' "
-				  "is the uncertain option.")
-			print(self.iterations_data)
+			print(pd.DataFrame(self.iterations_data))
 
-		mean_value_of_study = self.iterations_data['value_of_study'].mean()
-		sem_of_study = self.iterations_data['value_of_study'].sem()
+		mean_value_of_study = self.mean_value_study()
+		sem_of_study = self.standard_error_mean_value_study()
 		iterations = len(self.iterations_data)
 
 		if mean_value_of_study < 0:
@@ -352,21 +357,18 @@ class SimulationRun:
 
 		if self.do_explicit:
 			information.update({
-				"Mean of posterior expected values across draws": self.iterations_data['E[T|b_i]'].mean(),
+				"Mean of posterior expected values across draws": self.get_column('E[T|b_i]').mean(),
 				"Fraction of posterior means > bar":
-					(self.iterations_data['E[T|b_i]'] > self.input.bar).sum() / iterations,
+					(self.get_column('E[T|b_i]') > self.input.bar).sum() / iterations,
 			})
 
 		quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
 		for q in quantiles:
 			key = f"Quantile {q} value of study"
-			information[key] = self.iterations_data['value_of_study'].quantile(q)
+			information[key] = self.get_column('value_of_study').quantile(q)
 
 		df = pd.DataFrame([information]).T
 		print(df)
-
-	def mean_value_study(self):
-		return self.iterations_data['value_of_study'].mean()
 
 	@property
 	def bar(self):
