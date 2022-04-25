@@ -5,7 +5,7 @@ description = ""
 authors = ["tadamcz <tmkadamcz@gmail.com>"]
 
 [tool.poetry.dependencies]
-bayes_continuous = {git = "https://github.com/tadamcz/bayes-continuous.git", rev = "5733329d782bb2c142b83c4469cb7bb096a5cb24"}
+bayes_continuous = {git = "https://github.com/tadamcz/bayes-continuous.git", rev = "26960486b84db4da6d32949c939822d882d06aba"}
 python = ">=3.8.12,<3.9"
 numpy = "^1.22.3"
 scipy = "^1.8.0"
