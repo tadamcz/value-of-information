@@ -37,7 +37,7 @@ def normal_normal_closed_form(normal_prior, normal_likelihood):
 
 def simulation_input_idfn(inputs: SimulationInputs):
 	pri_loc, pri_scale = get_location_scale(inputs.prior_T)
-	return f"fam={inputs.prior_family()}, bar={inputs.bar}, E[T]~={round_sig(inputs.prior_ev)}, T_loc={round_sig(pri_loc)}, T_scale={round_sig(pri_scale)}, sd(B)~={round_sig(inputs.sd_B)}"
+	return f"fam={inputs.prior_family()}, bar={round_sig(inputs.bar)}, E[T]~={round_sig(inputs.prior_ev)}, T_loc={round_sig(pri_loc)}, T_scale={round_sig(pri_scale)}, sd(B)~={round_sig(inputs.sd_B)}"
 
 
 def rel_idfn(p):
