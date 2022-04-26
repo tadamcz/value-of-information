@@ -7,11 +7,11 @@ from scipy import stats
 from tests.seeds import RANDOM_SEEDS
 from value_of_information.simulation import SimulationInputs
 
-
 PRIOR_MEAN = 1.23
 PRIOR_SD = 5
 SD_B = 3
 BAR = 5
+
 
 def linsp(n) -> List[SimulationInputs]:
 	"""
@@ -77,7 +77,7 @@ def from_seed(n) -> List[SimulationInputs]:
 			prior_mean = -1  # Makes little difference
 			prior_sd = np.random.randint(1, 10)
 			sd_B = np.random.randint(1, 10)
-			distance_to_bar = np.random.randint(-2.5*prior_sd, 2.5*prior_sd)
+			distance_to_bar = np.random.randint(-2.5 * prior_sd, 2.5 * prior_sd)
 		bar = prior_mean + distance_to_bar
 
 		kwargs = {

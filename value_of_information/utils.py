@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.stats import stats
 
 
 def is_increasing(array, rtol=0, atol=0):
@@ -15,7 +14,7 @@ def is_increasing(array, rtol=0, atol=0):
 	return True
 
 
-def get_lognormal_moments(mu, sigma):
+def get_lognormal_moments(mu, sigma):  # todo add tests
 	var = (np.exp(sigma ** 2) - 1) * np.exp(2 * mu + sigma ** 2)
 	sd = np.sqrt(var)
 	expect = np.exp(mu + sigma ** 2 / 2)

@@ -28,7 +28,7 @@ def linsp_mu(n) -> List[SimulationInputs]:
 		i = SimulationInputs(
 			prior=prior,
 			sd_B=10,
-			bar=prior_expect+1*prior_sd
+			bar=prior_expect + 1 * prior_sd
 		)
 		inputs.append(i)
 	return inputs

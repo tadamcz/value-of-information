@@ -1,5 +1,6 @@
 from __future__ import annotations  # This will become the default in Python 3.10.
 
+import statistics
 import warnings
 
 import numpy as np
@@ -10,10 +11,9 @@ from bayes_continuous.posterior import Posterior
 from scipy import stats, optimize
 from scipy.stats._distn_infrastructure import rv_frozen
 from sortedcontainers import SortedDict
-import statistics
-import value_of_information.utils as utils
 
 import value_of_information.constants as constants
+from value_of_information import utils
 from value_of_information.rounding import round_sig
 
 
