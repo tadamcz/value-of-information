@@ -362,7 +362,7 @@ class SimulationRun:
 					(self.get_column('E[T|b_i]') > self.input.bar).sum() / iterations,
 			})
 
-		quantiles = [0.05, 0.25, 0.5, 0.75, 0.95]
+		quantiles = [0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, .9, 0.95, .99, .999]
 		for q in quantiles:
 			key = f"Quantile {q} value of study"
 			information[key] = self.get_column('value_of_study').quantile(q)
