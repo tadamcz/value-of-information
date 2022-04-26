@@ -1,3 +1,5 @@
+from unittest.mock import Mock
+
 import bayes_continuous.utils
 import numpy as np
 from bayes_continuous.likelihood_func import NormalLikelihood
@@ -22,14 +24,15 @@ def normal_normal_closed_form(normal_prior, normal_likelihood):
 	mu_1, sigma_1 = get_location_scale(normal_prior)
 	mu_2, sigma_2 = normal_likelihood.mu, normal_likelihood.sigma
 	posterior_mu, posterior_sigma = bayes_continuous.utils.normal_normal_closed_form(mu_1, sigma_1, mu_2, sigma_2)
-	posterior = stats.norm(posterior_mu, posterior_sigma)
 
-	# For speed and accuracy, we can replace the method `expect` (numerical integration)
-	# with `mean` (closed form).
-	# Ideally, one would do this with patching/mocking instead of here.
-	posterior.expect = posterior.mean
+	# Using mocks to avoid the onerous creation of an `rv_frozen`
+	posterior_expect = stats.norm.mean(posterior_mu, posterior_sigma)
+	posterior_cdf = lambda x: stats.norm.cdf(x, posterior_mu, posterior_sigma)
+	mock_distribution = Mock()
+	mock_distribution.expect = Mock(return_value=posterior_expect)
+	mock_distribution.cdf = Mock(side_effect=posterior_cdf)
 
-	return posterior
+	return mock_distribution
 
 
 def simulation_input_idfn(inputs: SimulationInputs):
