@@ -42,7 +42,7 @@ def linsp_distance_to_bar(n) -> List[SimulationInputs]:
 	prior_expect, prior_sd = utils.get_lognormal_moments(prior_mu, prior_sigma)
 	prior_median = np.exp(prior_mu)
 
-	for bar in np.linspace(prior_median, 7 * prior_sd, num=n):
+	for bar in np.linspace(prior_expect, prior_expect + 3 * prior_sd, num=n):
 		i = SimulationInputs(
 			prior=prior,
 			sd_B=10,

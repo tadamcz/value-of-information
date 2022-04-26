@@ -8,7 +8,7 @@ from tests.seeds import RANDOM_SEEDS
 from value_of_information.simulation import SimulationInputs
 
 PRIOR_MEAN = 1.23
-PRIOR_SD = 5
+PRIOR_SD = 10  # A large value makes the study have >0 value more often, so convergence is easier
 SD_B = 3
 BAR = 5
 
@@ -41,7 +41,7 @@ def linsp_distance_to_bar(n) -> List[SimulationInputs]:
 
 def linsp_prior_sd(n) -> List[SimulationInputs]:
 	inputs = []
-	for prior_stdev in np.linspace(3, 10, num=n):
+	for prior_stdev in np.linspace(PRIOR_SD, 2*PRIOR_SD, num=n):
 		prior = stats.norm(PRIOR_MEAN, prior_stdev)
 		i = SimulationInputs(
 			prior=prior,
@@ -75,7 +75,10 @@ def from_seed(n) -> List[SimulationInputs]:
 	for i in range(n):
 		with temp_seed(RANDOM_SEEDS[i]):
 			prior_mean = -1  # Makes little difference
-			prior_sd = np.random.randint(1, 10)
+
+			# A large value makes the study have >0 value more often, so convergence is easier
+			prior_sd = np.random.randint(3, 20)
+
 			sd_B = np.random.randint(1, 10)
 			distance_to_bar = np.random.randint(-2.5 * prior_sd, 2.5 * prior_sd)
 		bar = prior_mean + distance_to_bar

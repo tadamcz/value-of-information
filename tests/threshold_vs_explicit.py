@@ -9,7 +9,7 @@ from value_of_information.simulation import SimulationExecutor
 
 class TestThresholdvsExplicit:
 	"""
-	Additional ideas:
+	todo Additional ideas:
 	1.
 	using mocking, pass in the same explicit arrays of T_is and b_is to both methods,
 	then check that the value of the study is the same in each row.
@@ -30,11 +30,8 @@ class TestThresholdvsExplicit:
 		self.helper(inputs=simulation_inputs, iterations=15_000, relative_tolerance=15 / 100)
 
 	@pytest.mark.extra_slow
+	@pytest.mark.extra_mem
 	@pytest.mark.parametrize('simulation_inputs', gen_norm_norm.linsp(6), ids=shared.simulation_input_idfn)
 	def test_linsp(self, simulation_inputs):
-		self.helper(inputs=simulation_inputs, iterations=500_000, relative_tolerance=1 / 100)
+		self.helper(inputs=simulation_inputs, iterations=2_000_000, relative_tolerance=1 / 100)
 
-	@pytest.mark.extra_slow
-	@pytest.mark.parametrize('simulation_inputs', gen_norm_norm.from_seed(6), ids=shared.simulation_input_idfn)
-	def test_seed(self, simulation_inputs):
-		self.helper(inputs=simulation_inputs, iterations=500_000, relative_tolerance=1 / 100)
