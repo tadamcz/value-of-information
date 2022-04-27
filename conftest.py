@@ -10,7 +10,7 @@ def seed_idfn(fixture_value):
 	return f"seed={fixture_value}"
 
 
-n_random_seeds = int(os.environ.get('N_RAND_SEED', 1))
+n_random_seeds = int(os.environ.get('N_RAND_SEED', 10))
 
 
 @pytest.fixture(autouse=True, params=seeds.RANDOM_SEEDS[:n_random_seeds], ids=seed_idfn, scope='session')
