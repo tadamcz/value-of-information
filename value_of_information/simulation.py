@@ -290,7 +290,7 @@ class SimulationExecutor:
 
 	def print_explainer(self):
 		utils.print_wrapped("We call T the parameter over which we want to conduct inference, "
-			  "and B the random variable we observe. Realisations of B are denoted b. "
+			  "and B the random variable (signal) we observe. Realisations of B are denoted b. "
 			  "Currently, only one distribution family is supported for B: the normal distribution with unknown mean T "
 			  "and known standard deviation.")
 
