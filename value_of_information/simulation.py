@@ -190,8 +190,8 @@ class SimulationExecutor:
 			pr_beat_bar = 1 - posterior_explicit.cdf(self.input.bar)
 			posterior_ev_beats_bar = posterior_ev > self.input.bar
 		else:
-			pr_beat_bar = "not computed"
-			posterior_ev = "not computed"
+			pr_beat_bar = "NA"
+			posterior_ev = "NA"
 
 		# Without study
 		if self.input.prior_ev > self.input.bar:
@@ -340,7 +340,7 @@ class SimulationRun:
 		# Once the display.max_rows is exceeded, the display.min_rows options determines how many rows are shown in
 		# the truncated repr.
 		with pd.option_context('display.max_columns', None, 'display.max_rows', 20, 'display.min_rows', 20,
-							   'display.width', None):
+							   'display.width', None, 'display.precision', 4):
 			print(pd.DataFrame(self.iterations_data))
 
 		mean_value_of_study = self.mean_value_study()
@@ -368,7 +368,8 @@ class SimulationRun:
 			information[key] = self.get_column('value_of_study').quantile(q)
 
 		df = pd.DataFrame([information]).T
-		print(df)
+		with pd.option_context('display.precision', 4):
+			print(df)
 
 	@property
 	def bar(self):

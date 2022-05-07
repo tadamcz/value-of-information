@@ -4,7 +4,7 @@ import pandas as pd
 from sigfig import round as round_sig
 
 from value_of_information.simulation import SimulationRun
-
+from value_of_information import utils
 
 class CostBenefitInputs:
 	def __init__(self, value_units, money_units, capital, study_cost):
@@ -40,7 +40,7 @@ class CostBenefitsExecutor:  # todo add tests
 
 		prior_units = f"{self.inputs.value_units} per {self.inputs.money_units} spent"
 
-		print(f"Note: you should make sure that the prior (a {self.sim_run.prior_family} with "
+		utils.print_wrapped(f"Note: you should make sure that the prior (a {self.sim_run.prior_family} with "
 			  f"mean {round_sig(prior_ev, 2)}) and the bar ({self.sim_run.bar}) are expressed in {prior_units}.")
 
 		# Output:
@@ -62,7 +62,7 @@ class CostBenefitsExecutor:  # todo add tests
 			f"Expected net gain from study ({self.inputs.value_units})": net_gain_study,
 		}
 
-		with pd.option_context('display.width', None, 'display.max_colwidth', None):
+		with pd.option_context('display.width', None, 'display.max_colwidth', None, 'display.precision', 4):
 			print(pd.DataFrame([result]).T)
 
 		return result
