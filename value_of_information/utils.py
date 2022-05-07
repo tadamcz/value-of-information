@@ -1,3 +1,5 @@
+import textwrap
+
 import numpy as np
 
 
@@ -20,3 +22,8 @@ def get_lognormal_moments(mu, sigma):  # todo add tests
 	expect = np.exp(mu + sigma ** 2 / 2)
 
 	return expect, sd
+
+
+def print_wrapped(string, width=120, replace_whitespace=False):
+	array = textwrap.wrap(string, width, replace_whitespace=replace_whitespace, drop_whitespace=False)
+	print("\n".join(array))

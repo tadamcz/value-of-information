@@ -108,7 +108,7 @@ class SimulationExecutor:
 		if convergence_target is None:
 			print(f"The simulation will run for exactly {iterations} iterations.")
 		else:
-			print(f"The simulation will stop after `standard_error_of_mean < {convergence_target}*mean` is reached, "
+			utils.print_wrapped(f"The simulation will stop after `standard_error_of_mean < {convergence_target}*mean` is reached, "
 				  f"or after {max_iterations} iterations, whichever comes first.")
 		i = 0
 		while i < max_iterations:
@@ -289,7 +289,7 @@ class SimulationExecutor:
 		return posterior
 
 	def print_explainer(self):
-		print("We call T the parameter over which we want to conduct inference, "
+		utils.print_wrapped("We call T the parameter over which we want to conduct inference, "
 			  "and B the random variable we observe. Realisations of B are denoted b. "
 			  "Currently, only normally distributed B is supported, where T is the mean "
 			  "of B.\n")
@@ -332,11 +332,11 @@ class SimulationRun:
 
 	def print_final(self):
 
-		print(f"\nFor each iteration i of the simulation, we draw a true value T_i from the prior, and we draw "
+		utils.print_wrapped(f"\nFor each iteration i of the simulation, we draw a true value T_i from the prior, and we draw "
 			  "an estimate b_i from Normal(T_i,sd(B)). The decision-maker cannot observe T_i, their subjective "
 			  "posterior expected value is E[T|b_i]. E[T|b_i] and P(T|b_i > bar) are only computed if "
 			  "running an 'explicit' simulation. 'fallback' is the option whose value is `bar`, and 'candidate' "
-			  "is the uncertain option.")
+			  "is the uncertain option.\n")
 		# Once the display.max_rows is exceeded, the display.min_rows options determines how many rows are shown in
 		# the truncated repr.
 		with pd.option_context('display.max_columns', None, 'display.max_rows', 20, 'display.min_rows', 20,
