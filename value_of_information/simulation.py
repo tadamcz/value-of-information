@@ -217,6 +217,7 @@ class SimulationExecutor:
 
 			'E[T|b_i]': posterior_ev,
 			'P(T|b_i>bar)': pr_beat_bar,
+			'E[T|b_i]>bar': posterior_ev_beats_bar,
 
 			'w_study': decision_w_study,
 			'w_out_study': decision_w_out_study,
@@ -353,13 +354,12 @@ class SimulationRun:
 		information = {
 			"Mean value of study": mean_value_of_study,
 			"Standard error of mean value of study": sem_of_study,
+			"Fraction of iterations where E[T|b_i] > bar": self.get_column("E[T|b_i]>bar").sum() / iterations,
 		}
 
 		if self.do_explicit:
 			information.update({
-				"Mean of posterior expected values across draws": self.get_column('E[T|b_i]').mean(),
-				"Fraction of posterior means > bar":
-					(self.get_column('E[T|b_i]') > self.input.bar).sum() / iterations,
+				"Mean of posterior expected values across iterations": self.get_column('E[T|b_i]').mean(),
 			})
 
 		quantiles = [0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, .9, 0.95, .99, .999]
