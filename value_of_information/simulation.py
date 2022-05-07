@@ -113,7 +113,7 @@ class SimulationExecutor:
 		while i < max_iterations:
 			T_i = T_is[i]
 
-			# Our study has the point estimator B_i for the parameter T_i.
+			# Our signal has the point estimator B_i for the parameter T_i.
 			# sd(B_i) is a constant
 			sd_B_i = self.input.sd_B
 
@@ -138,8 +138,8 @@ class SimulationExecutor:
 
 			# Repeatedly calling `.sem()` is expensive
 			if iterations is None and len(this_run) % 10 == 0:
-				std_err = this_run.standard_error_mean_value_study()
-				mean = this_run.mean_value_study()
+				std_err = this_run.standard_error_mean_benefit_signal()
+				mean = this_run.mean_benefit_signal()
 				if std_err < convergence_target * mean:
 					this_run.print_intermediate()
 					print(f"Converged after {len(this_run)} simulation iterations!")
@@ -152,7 +152,7 @@ class SimulationExecutor:
 		else:
 			print(
 				f"Simulation ended after {len(this_run)} iterations. "
-				f"Standard error of mean study value: {round_sig(this_run.standard_error_mean_value_study())})")
+				f"Standard error of mean benefit from signal: {round_sig(this_run.standard_error_mean_benefit_signal())})")
 
 		this_run.print_final()
 
@@ -192,23 +192,23 @@ class SimulationExecutor:
 			pr_beat_bar = "NA"
 			posterior_ev = "NA"
 
-		# Without study
+		# Without signal
 		if self.input.prior_ev > self.input.bar:
-			decision_w_out_study = "candidate"
-			value_w_out_study = T_i
+			decision_w_out_signal = "candidate"
+			value_w_out_signal = T_i
 		else:
-			decision_w_out_study = "fallback"
-			value_w_out_study = self.input.bar
+			decision_w_out_signal = "fallback"
+			value_w_out_signal = self.input.bar
 
-		# With study
+		# With signal
 		if posterior_ev_beats_bar:
-			decision_w_study = "candidate"
-			value_w_study = T_i
+			decision_w_signal = "candidate"
+			value_w_signal = T_i
 		else:
-			decision_w_study = "fallback"
-			value_w_study = self.input.bar
+			decision_w_signal = "fallback"
+			value_w_signal = self.input.bar
 
-		value_of_study = value_w_study - value_w_out_study
+		benefit_signal = value_w_signal - value_w_out_signal
 
 		iteration_output = {
 			'T_i': T_i,
@@ -218,13 +218,13 @@ class SimulationExecutor:
 			'P(T|b_i>bar)': pr_beat_bar,
 			'E[T|b_i]>bar': posterior_ev_beats_bar,
 
-			'w_study': decision_w_study,
-			'w_out_study': decision_w_out_study,
+			'w_signal': decision_w_signal,
+			'w_out_signal': decision_w_out_signal,
 
-			'value_w_study': value_w_study,
-			'value_w_out_study': value_w_out_study,
+			'value_w_signal': value_w_signal,
+			'value_w_out_signal': value_w_out_signal,
 
-			'value_of_study': value_of_study,
+			'benefit_signal': benefit_signal,
 		}
 
 		return iteration_output
@@ -308,19 +308,19 @@ class SimulationRun:
 	def append(self, iteration: dict):
 		self.iterations_data.append(iteration)
 
-	def mean_value_study(self):
-		return statistics.fmean([i['value_of_study'] for i in self.iterations_data])
+	def mean_benefit_signal(self):
+		return statistics.fmean([i['benefit_signal'] for i in self.iterations_data])
 
-	def standard_error_mean_value_study(self):
-		return scipy.stats.sem([i['value_of_study'] for i in self.iterations_data])
+	def standard_error_mean_benefit_signal(self):
+		return scipy.stats.sem([i['benefit_signal'] for i in self.iterations_data])
 
 	def print_intermediate(self):
 		iteration_number = len(self.iterations_data)
-		std_err = self.standard_error_mean_value_study()
-		mean = self.mean_value_study()
+		std_err = self.standard_error_mean_benefit_signal()
+		mean = self.mean_benefit_signal()
 		information = {
-			'Iteration of simulation': iteration_number,
-			"Mean study value": round_sig(mean),
+			"Iteration of simulation": iteration_number,
+			"Mean benefit from signal": round_sig(mean),
 			"Standard error of mean": round_sig(std_err),
 		}
 		df = pd.DataFrame([information])
@@ -343,16 +343,16 @@ class SimulationRun:
 							   'display.width', None, 'display.precision', 4):
 			print(pd.DataFrame(self.iterations_data))
 
-		mean_value_of_study = self.mean_value_study()
-		sem_of_study = self.standard_error_mean_value_study()
+		mean_benefit_signal = self.mean_benefit_signal()
+		sem_benefit_signal = self.standard_error_mean_benefit_signal()
 		iterations = len(self.iterations_data)
 
-		if mean_value_of_study < 0:
-			warnings.warn(f"Value of study is negative with {iterations} simulation iterations. Try more iterations?")
+		if mean_benefit_signal < 0:
+			warnings.warn(f"Benefit from signal is negative with {iterations} simulation iterations. Try more iterations?")
 
 		information = {
-			"Mean value of study": mean_value_of_study,
-			"Standard error of mean value of study": sem_of_study,
+			"Mean benefit from signal": mean_benefit_signal,
+			"Standard error of mean benefit from signal": sem_benefit_signal,
 			"Fraction of iterations where E[T|b_i] > bar": self.get_column("E[T|b_i]>bar").sum() / iterations,
 		}
 
@@ -363,8 +363,8 @@ class SimulationRun:
 
 		quantiles = [0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, .9, 0.95, .99, .999]
 		for q in quantiles:
-			key = f"Quantile {q} value of study"
-			information[key] = self.get_column('value_of_study').quantile(q)
+			key = f"Quantile {q} benefit from signal"
+			information[key] = self.get_column('benefit_signal').quantile(q)
 
 		df = pd.DataFrame([information]).T
 		with pd.option_context('display.precision', 4):

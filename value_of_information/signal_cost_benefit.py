@@ -7,14 +7,14 @@ from value_of_information.simulation import SimulationRun
 from value_of_information import utils
 
 class CostBenefitInputs:
-	def __init__(self, value_units, money_units, capital, study_cost):
+	def __init__(self, value_units, money_units, capital, signal_cost):
 		"""
 		:param value_units: For example: "utils", "multiples of GiveDirectly", or "lives saved"
 		:param money_units: For example: "$" or "M$", or "£"
 		:param capital: How much money do you have?
-		:param study_cost: Expressed in money_units
+		:param signal_cost: Expressed in money_units
 		"""
-		self.study_cost = study_cost
+		self.signal_cost = signal_cost
 		self.capital = capital
 		self.money_units = money_units
 		self.value_units = value_units
@@ -33,9 +33,9 @@ class CostBenefitsExecutor:  # todo add tests
 		if self.sim_run is None:
 			raise ValueError
 		prior_ev = self.sim_run.prior.expect()
-		# Cost-effectiveness of money in the absence of the study
+		# Cost-effectiveness of money in the absence of the signal
 		# Expressed in `prior_units`
-		no_study_best_option = max(self.sim_run.bar, prior_ev)
+		no_signal_best_option = max(self.sim_run.bar, prior_ev)
 
 		prior_units = f"{self.inputs.value_units} per {self.inputs.money_units} spent"
 
@@ -43,22 +43,22 @@ class CostBenefitsExecutor:  # todo add tests
 			  f"mean {round_sig(prior_ev, 2)}) and the bar ({self.sim_run.bar}) are expressed in {prior_units}.")
 
 		# Output:
-		ev_study_per_usd_spent = self.sim_run.mean_value_study()
-		capital_after_study = self.inputs.capital - self.inputs.study_cost
-		ev_with_study = capital_after_study * (ev_study_per_usd_spent + no_study_best_option)
-		ev_without_study = self.inputs.capital * no_study_best_option
-		net_gain_study = ev_with_study - ev_without_study
+		signal_benefit_per_usd_spent = self.sim_run.mean_benefit_signal()
+		capital_after_signal = self.inputs.capital - self.inputs.signal_cost
+		value_with_signal = capital_after_signal * (signal_benefit_per_usd_spent + no_signal_best_option)
+		value_without_signal = self.inputs.capital * no_signal_best_option
+		net_benefit_signal = value_with_signal - value_without_signal
 
 		result = {
-			f"Best option without study ({prior_units})": no_study_best_option,
+			f"Best option without signal ({prior_units})": no_signal_best_option,
 			f"Capital ({self.inputs.money_units})": self.inputs.capital,
-			f"Expected value without study ({self.inputs.value_units})": ev_without_study,
+			f"Expected value without signal ({self.inputs.value_units})": value_without_signal,
 
-			f"Expected study value ({prior_units})": ev_study_per_usd_spent,
-			f"Capital left after study ({self.inputs.money_units})": capital_after_study,
-			f"Expected value with study ({self.inputs.value_units})": ev_with_study,
+			f"Expected benefit from signal ({prior_units})": signal_benefit_per_usd_spent,
+			f"Capital left after signal ({self.inputs.money_units})": capital_after_signal,
+			f"Expected value with signal ({self.inputs.value_units})": value_with_signal,
 
-			f"Expected net gain from study ({self.inputs.value_units})": net_gain_study,
+			f"Expected net benefit from signal ({self.inputs.value_units})": net_benefit_signal,
 		}
 
 		with pd.option_context('display.width', None, 'display.max_colwidth', None, 'display.precision', 4):

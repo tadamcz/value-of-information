@@ -12,7 +12,7 @@ class TestThresholdvsExplicit:
 	todo Additional ideas:
 	1.
 	using mocking, pass in the same explicit arrays of T_is and b_is to both methods,
-	then check that the value of the study is the same in each row.
+	then check that the value of the signal is the same in each row.
 	"""
 
 	def helper(self, inputs, iterations, relative_tolerance):
@@ -21,8 +21,8 @@ class TestThresholdvsExplicit:
 			explicit = SimulationExecutor(inputs, force_explicit=True, print_every=1e9).execute(iterations=iterations)
 			threshold = SimulationExecutor(inputs, force_explicit=False, print_every=1e9).execute(iterations=iterations)
 
-			assert explicit.mean_value_study() == pytest.approx(
-				threshold.mean_value_study(), rel=relative_tolerance)
+			assert explicit.mean_benefit_signal() == pytest.approx(
+				threshold.mean_benefit_signal(), rel=relative_tolerance)
 
 	@pytest.mark.parametrize('simulation_inputs',
 							gen_norm_norm.linsp_distance_to_bar(2), ids=shared.simulation_input_idfn)

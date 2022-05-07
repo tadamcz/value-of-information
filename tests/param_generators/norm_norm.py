@@ -8,7 +8,7 @@ from tests.seeds import RANDOM_SEEDS
 from value_of_information.simulation import SimulationInputs
 
 PRIOR_MEAN = 1.23
-PRIOR_SD = 10  # A large value makes the study have >0 value more often, so convergence is easier
+PRIOR_SD = 10  # A large value makes the signal have >0 benefit more often, so convergence is easier
 SD_B = 3
 BAR = 5
 
@@ -76,7 +76,7 @@ def from_seed(n) -> List[SimulationInputs]:
 		with temp_seed(RANDOM_SEEDS[i]):
 			prior_mean = -1  # Makes little difference
 
-			# A large value makes the study have >0 value more often, so convergence is easier
+			# A large value makes the the signal have >0 benefit more often, so convergence is easier
 			prior_sd = np.random.randint(3, 20)
 
 			sd_B = np.random.randint(1, 10)

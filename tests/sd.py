@@ -14,7 +14,7 @@ from value_of_information.simulation import SimulationExecutor, SimulationInputs
 
 class Test_sdB:
 	"""
-	The value of the study is decreasing in sd(B).
+	The value of the signal is decreasing in sd(B).
 	"""
 
 	def helper(self, central_simulation_inputs, iterations, num_sds):
@@ -23,7 +23,7 @@ class Test_sdB:
 		means = []
 		for sd_B in list_sd_Bs:
 			central_simulation_inputs.sd_B = sd_B
-			mean = SimulationExecutor(central_simulation_inputs, print_every=1e9).execute(iterations=iterations).mean_value_study()
+			mean = SimulationExecutor(central_simulation_inputs, print_every=1e9).execute(iterations=iterations).mean_benefit_signal()
 			means.append(mean)
 		assert is_decreasing(means)
 
@@ -50,7 +50,7 @@ class Test_sdB:
 
 class Test_sd_prior_T:
 	"""
-	The value of the study is increasing in sd(prior_T) for a normal prior.
+	The value of the signal is increasing in sd(prior_T) for a normal prior.
 	"""
 
 	def helper(self, central_simulation_inputs, iterations, num_sds):
@@ -61,7 +61,7 @@ class Test_sd_prior_T:
 			means = []
 			for sd_T in list_sd_Ts:
 				central_simulation_inputs.prior_T = stats.norm(central_mean, sd_T)
-				mean = SimulationExecutor(central_simulation_inputs, print_every=1e9).execute(iterations=iterations).mean_value_study()
+				mean = SimulationExecutor(central_simulation_inputs, print_every=1e9).execute(iterations=iterations).mean_benefit_signal()
 				means.append(mean)
 			assert is_increasing(means)
 
