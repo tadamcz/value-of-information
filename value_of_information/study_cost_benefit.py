@@ -30,7 +30,6 @@ class CostBenefitsExecutor:  # todo add tests
 		self.inputs = inputs
 
 	def execute(self):
-		print("\n")
 		if self.sim_run is None:
 			raise ValueError
 		prior_ev = self.sim_run.prior.expect()
@@ -40,7 +39,7 @@ class CostBenefitsExecutor:  # todo add tests
 
 		prior_units = f"{self.inputs.value_units} per {self.inputs.money_units} spent"
 
-		utils.print_wrapped(f"Note: you should make sure that the prior (a {self.sim_run.prior_family} with "
+		utils.print_wrapped(f"\nNote: you should make sure that the prior (a {self.sim_run.prior_family} with "
 			  f"mean {round_sig(prior_ev, 2)}) and the bar ({self.sim_run.bar}) are expressed in {prior_units}.")
 
 		# Output:
@@ -63,6 +62,7 @@ class CostBenefitsExecutor:  # todo add tests
 		}
 
 		with pd.option_context('display.width', None, 'display.max_colwidth', None, 'display.precision', 4):
-			print(pd.DataFrame([result]).T)
+			df = pd.DataFrame([result]).T
+			print("\n"+df.to_string(header=False))
 
 		return result

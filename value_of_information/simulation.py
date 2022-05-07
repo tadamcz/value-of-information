@@ -72,9 +72,8 @@ class SimulationExecutor:
 		or after `max_iterations` iterations, whichever comes first.
 		"""
 		self.print_explainer()
-		print(self.input)
-		print("\n")
-		print(f"Explicit simulation: {self.do_explicit}")
+		print("\n"+self.input.__repr__())
+		print(f"\nExplicit simulation: {self.do_explicit}")
 		if max_iterations is None:
 			if self.do_explicit:
 				max_iterations = 1000
@@ -292,8 +291,8 @@ class SimulationExecutor:
 	def print_explainer(self):
 		utils.print_wrapped("We call T the parameter over which we want to conduct inference, "
 			  "and B the random variable we observe. Realisations of B are denoted b. "
-			  "Currently, only normally distributed B is supported, where T is the mean "
-			  "of B.\n")
+			  "Currently, only one distribution family is supported for B: the normal distribution with unknown mean T "
+			  "and known standard deviation.")
 
 
 
@@ -325,7 +324,7 @@ class SimulationRun:
 			"Standard error of mean": round_sig(std_err),
 		}
 		df = pd.DataFrame([information])
-		print(df)
+		print(df.to_string(index=False))
 
 	def get_column(self, key):
 		df = pd.DataFrame(self.iterations_data)
@@ -369,7 +368,7 @@ class SimulationRun:
 
 		df = pd.DataFrame([information]).T
 		with pd.option_context('display.precision', 4):
-			print(df)
+			print("\n"+df.to_string(header=False))
 
 	@property
 	def bar(self):
