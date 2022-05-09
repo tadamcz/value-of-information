@@ -370,6 +370,9 @@ class SimulationRun:
 		with pd.option_context('display.precision', 4):
 			print("\n"+df.to_string(header=False))
 
+	def csv(self):
+		return pd.DataFrame(self.iterations_data).to_csv()
+
 	@property
 	def bar(self):
 		return self.input.bar
