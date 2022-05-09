@@ -3,6 +3,7 @@ from sigfig import round as round_lib
 
 from value_of_information import constants
 
+
 def round_sig(x, sig=constants.ROUND_SIG_FIG, *args, **kwargs):
 	if isinstance(x, np.float64):
 		if np.isnan(x):

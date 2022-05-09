@@ -41,7 +41,7 @@ def linsp_distance_to_bar(n) -> List[SimulationInputs]:
 
 def linsp_prior_sd(n) -> List[SimulationInputs]:
 	inputs = []
-	for prior_stdev in np.linspace(PRIOR_SD, 2*PRIOR_SD, num=n):
+	for prior_stdev in np.linspace(PRIOR_SD, 2 * PRIOR_SD, num=n):
 		prior = stats.norm(PRIOR_MEAN, prior_stdev)
 		i = SimulationInputs(
 			prior=prior,

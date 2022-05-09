@@ -3,8 +3,9 @@ from typing import Optional
 import pandas as pd
 from sigfig import round as round_sig
 
-from value_of_information.simulation import SimulationRun
 from value_of_information import utils
+from value_of_information.simulation import SimulationRun
+
 
 class CostBenefitInputs:
 	def __init__(self, value_units, money_units, capital, signal_cost):
@@ -21,7 +22,7 @@ class CostBenefitInputs:
 
 
 class CostBenefitsExecutor:  # todo add tests
-	def __init__(self, inputs, simulation_run: Optional[SimulationRun]=None):
+	def __init__(self, inputs, simulation_run: Optional[SimulationRun] = None):
 		"""
 		:param simulation_run: An instance of class `SimulationRun`. It must be such that:
 		- the prior and bar are expressed in value_units per money_units spent
@@ -40,7 +41,7 @@ class CostBenefitsExecutor:  # todo add tests
 		prior_units = f"{self.inputs.value_units} per {self.inputs.money_units} spent"
 
 		utils.print_wrapped(f"\nNote: you should make sure that the prior (a {self.sim_run.prior_family} with "
-			  f"mean {round_sig(prior_ev, 2)}) and the bar ({self.sim_run.bar}) are expressed in {prior_units}.")
+							f"mean {round_sig(prior_ev, 2)}) and the bar ({self.sim_run.bar}) are expressed in {prior_units}.")
 
 		# Output:
 		signal_benefit_per_usd_spent = self.sim_run.mean_benefit_signal()
@@ -63,6 +64,6 @@ class CostBenefitsExecutor:  # todo add tests
 
 		with pd.option_context('display.width', None, 'display.max_colwidth', None, 'display.precision', 4):
 			df = pd.DataFrame([result]).T
-			print("\n"+df.to_string(header=False))
+			print("\n" + df.to_string(header=False))
 
 		return result

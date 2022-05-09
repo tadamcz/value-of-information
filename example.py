@@ -1,9 +1,8 @@
 import numpy as np
 from scipy import stats
-from metalogistic import MetaLogistic
 
-from value_of_information.simulation import SimulationInputs, SimulationExecutor, SimulationRun
 from value_of_information.signal_cost_benefit import CostBenefitsExecutor, CostBenefitInputs
+from value_of_information.simulation import SimulationInputs, SimulationExecutor
 
 prior_mu, prior_sigma = 1, 1
 
@@ -22,4 +21,3 @@ cb_inputs = CostBenefitInputs(
 )
 
 CostBenefitsExecutor(inputs=cb_inputs, simulation_run=simulation_run).execute()
-

@@ -57,6 +57,7 @@ class SimulationInputs:
 		}
 		return pd.DataFrame([information]).to_string(index=False)
 
+
 class SimulationExecutor:
 	def __init__(self, input: SimulationInputs, force_explicit=False, print_every=None):
 		self.input = input
@@ -72,7 +73,7 @@ class SimulationExecutor:
 		or after `max_iterations` iterations, whichever comes first.
 		"""
 		self.print_explainer()
-		print("\n"+self.input.__repr__())
+		print("\n" + self.input.__repr__())
 		print(f"\nExplicit simulation: {self.do_explicit}")
 		if max_iterations is None:
 			if self.do_explicit:
@@ -107,8 +108,9 @@ class SimulationExecutor:
 		if convergence_target is None:
 			print(f"The simulation will run for exactly {iterations} iterations.")
 		else:
-			utils.print_wrapped(f"The simulation will stop after `standard_error_of_mean < {convergence_target}*mean` is reached, "
-				  f"or after {max_iterations} iterations, whichever comes first.")
+			utils.print_wrapped(
+				f"The simulation will stop after `standard_error_of_mean < {convergence_target}*mean` is reached, "
+				f"or after {max_iterations} iterations, whichever comes first.")
 		i = 0
 		while i < max_iterations:
 			T_i = T_is[i]
@@ -125,8 +127,8 @@ class SimulationExecutor:
 			b_i = T_i + b_i_distance
 
 			iteration_kwargs = {
-				'b_i':b_i,
-				'T_i':T_i,
+				'b_i': b_i,
+				'T_i': T_i,
 				'sd_B_i': sd_B_i,
 			}
 			if self.do_explicit:
@@ -178,7 +180,6 @@ class SimulationExecutor:
 			return self.iteration_create_dict(posterior_ev_beats_bar=True, T_i=T_i, b_i=b_i)
 		else:
 			return self.iteration_create_dict(posterior_ev_beats_bar=False, T_i=T_i, b_i=b_i)
-
 
 	def iteration_create_dict(self, T_i, b_i, posterior_explicit=None, posterior_ev_beats_bar=None) -> dict:
 		if posterior_explicit is None and posterior_ev_beats_bar is None:
@@ -244,6 +245,7 @@ class SimulationExecutor:
 		"""
 
 		posterior_ev_sorted = SortedDict()  # Sorted by key
+
 		def f_to_solve(b):
 			likelihood = NormalLikelihood(b, self.input.sd_B)
 			posterior = self.posterior(self.input.prior_T, likelihood)
@@ -252,8 +254,9 @@ class SimulationExecutor:
 			posterior_ev_sorted[b] = posterior_ev
 			values_by_key = list(posterior_ev_sorted.values())
 			if not utils.is_increasing(values_by_key, rtol=1e-9):
-				raise RuntimeError(f"Found non-increasing sequence of E[T|b]: {values_by_key}. An integral was likely computed incorrectly.")
-			return posterior_ev-self.input.bar
+				raise RuntimeError(
+					f"Found non-increasing sequence of E[T|b]: {values_by_key}. An integral was likely computed incorrectly.")
+			return posterior_ev - self.input.bar
 
 		p_0_1_T = self.input.prior_T.ppf(0.1)
 		p_0_9_T = self.input.prior_T.ppf(0.9)
@@ -266,12 +269,12 @@ class SimulationExecutor:
 
 		additive_step = 1
 		while f_to_solve(left) > 0.:
-			additive_step = additive_step*FACTOR
+			additive_step = additive_step * FACTOR
 			left = left - additive_step
 
 		additive_step = 1
 		while f_to_solve(right) < 0.:
-			additive_step = additive_step*FACTOR
+			additive_step = additive_step * FACTOR
 			right = right + additive_step
 		# f_to_solve(left) and f_to_solve(right) now have opposite signs
 
@@ -281,7 +284,6 @@ class SimulationExecutor:
 
 		return x0
 
-
 	def posterior(self, prior: rv_frozen, likelihood: LikelihoodFunction):
 		posterior = Posterior(prior, likelihood)
 		if np.isnan(posterior.expect()):
@@ -290,10 +292,9 @@ class SimulationExecutor:
 
 	def print_explainer(self):
 		utils.print_wrapped("We call T the parameter over which we want to conduct inference, "
-			  "and B the random variable (signal) we observe. Realisations of B are denoted b. "
-			  "Currently, only one distribution family is supported for B: the normal distribution with unknown mean T "
-			  "and known standard deviation.")
-
+							"and B the random variable (signal) we observe. Realisations of B are denoted b. "
+							"Currently, only one distribution family is supported for B: the normal distribution with unknown mean T "
+							"and known standard deviation.")
 
 
 class SimulationRun:
@@ -301,7 +302,7 @@ class SimulationRun:
 		self.input = inputs
 		self.iterations_data = []
 		self.do_explicit = executor.do_explicit
-		
+
 	def __len__(self):
 		return len(self.iterations_data)
 
@@ -332,11 +333,12 @@ class SimulationRun:
 
 	def print_final(self):
 
-		utils.print_wrapped(f"\nFor each iteration i of the simulation, we draw a true value T_i from the prior, and we draw "
-			  "an estimate b_i from Normal(T_i,sd(B)). The decision-maker cannot observe T_i, their subjective "
-			  "posterior expected value is E[T|b_i]. E[T|b_i] and P(T|b_i > bar) are only computed if "
-			  "running an 'explicit' simulation. 'fallback' is the option whose value is `bar`, and 'candidate' "
-			  "is the uncertain option.\n")
+		utils.print_wrapped(
+			f"\nFor each iteration i of the simulation, we draw a true value T_i from the prior, and we draw "
+			"an estimate b_i from Normal(T_i,sd(B)). The decision-maker cannot observe T_i, their subjective "
+			"posterior expected value is E[T|b_i]. E[T|b_i] and P(T|b_i > bar) are only computed if "
+			"running an 'explicit' simulation. 'fallback' is the option whose value is `bar`, and 'candidate' "
+			"is the uncertain option.\n")
 		# Once the display.max_rows is exceeded, the display.min_rows options determines how many rows are shown in
 		# the truncated repr.
 		with pd.option_context('display.max_columns', None, 'display.max_rows', 20, 'display.min_rows', 20,
@@ -348,7 +350,8 @@ class SimulationRun:
 		iterations = len(self.iterations_data)
 
 		if mean_benefit_signal < 0:
-			warnings.warn(f"Benefit from signal is negative with {iterations} simulation iterations. Try more iterations?")
+			warnings.warn(
+				f"Benefit from signal is negative with {iterations} simulation iterations. Try more iterations?")
 
 		information = {
 			"Mean benefit from signal": mean_benefit_signal,
@@ -368,7 +371,7 @@ class SimulationRun:
 
 		df = pd.DataFrame([information]).T
 		with pd.option_context('display.precision', 4):
-			print("\n"+df.to_string(header=False))
+			print("\n" + df.to_string(header=False))
 
 	def csv(self):
 		return pd.DataFrame(self.iterations_data).to_csv()

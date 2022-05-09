@@ -62,7 +62,7 @@ class TestInfiniteSample:
 		simulation_run = self.simulate(100)
 		T_is = np.asarray(simulation_run.get_column('T_i'))
 		expected_values = np.asarray(simulation_run.get_column('E[T|b_i]'))
-		assert T_is == pytest.approx(expected_values, rel=1/100)
+		assert T_is == pytest.approx(expected_values, rel=1 / 100)
 
 	def mean_helper(self, relative_tolerance, iterations):
 		"""
