@@ -80,7 +80,7 @@ Therefore, when `B` is normally distributed with mean `T` (the only distribution
 equation solver to find the threshold value `B=b_t`, such that `E[T|b]>bar` if and only if `b>b_t`. This is hundreds of times faster than explicitly computing the posterior probability distribution `P(T|b_i)` in each iteration (which can be achieved by passing `force_explicit=True`).
 
 ## Cost-benefit analysis
-The console output is relatively self-explanatory. You can also read [`signal_cost_benefit.py`](blob/master/value_of_information/signal_cost_benefit.py), which is short and simple. A more detailed explanation may be added here later.
+The console output is relatively self-explanatory. You can also read [`signal_cost_benefit.py`](value_of_information/signal_cost_benefit.py), which is short and simple. A more detailed explanation may be added here later.
 
 # Installation
 
