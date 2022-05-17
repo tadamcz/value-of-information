@@ -1,5 +1,7 @@
 # What this package does
-This package lets you calculate the [value of information](https://en.wikipedia.org/wiki/Value_of_information) (VOI) of receiving a signal.
+This package lets you estimate the [value of information](https://en.wikipedia.org/wiki/Value_of_information) (VOI) of receiving a signal, in a simplified model.
+
+It also lets you do a cost-benefit analysis: weighing the costs of the information against the stakes of the decision that may be improved by the information.
 
 ## Background
 When we gain information about a decision-relevant quantity, that information may improve the decision we ultimately
@@ -71,13 +73,16 @@ We make use of the following fact to speed up the simulation:
 mean `T`, then, for any prior distribution over `T`, `E[T|B=b]` is increasing in `b`.
  
 This was shown by [Andrews et al. 1972](assets/andrews1972.pdf) (Lemma 1). It was generalised
-by [Ma 1999](assets/ma1999.pdf) (Corollary 1.3) to any likelihood function arising from a B that (i) has T as a location
+by [Ma 1999](assets/ma1999.pdf) (Corollary 1.3) to any likelihood function arising from a `B` that (i) has `T` as a location
 parameter, and (ii) is strongly unimodally distributed.
 
 Therefore, when `B` is normally distributed with mean `T` (the only distribution currently supported), by default we run a numerical
 equation solver to find the threshold value `B=b_t`, such that `E[T|b]>bar` if and only if `b>b_t`. This is hundreds of times faster than explicitly computing the posterior probability distribution `P(T|b_i)` in each iteration (which can be achieved by passing `force_explicit=True`).
 
-# Setup
+## Cost-benefit analysis
+The console output is relatively self-explanatory. You can also read [`signal_cost_benefit.py`](blob/master/value_of_information/signal_cost_benefit.py), which is short and simple. A more detailed explanation may be added here later.
+
+# Installation
 
 Clone:
 
