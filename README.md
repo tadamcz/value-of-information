@@ -48,3 +48,7 @@ observation of B=b. For any prior distribution over T,
 This was shown by [Andrews et al. 1972](assets/andrews1972.pdf) (Lemma 1). It was generalised
 by [Ma 1999](assets/ma1999.pdf) (Corollary 1.3) to any likelihood function arising from a B that (i) has T as a location
 parameter, and (ii) is strongly unimodally distributed.
+
+# Funding
+
+This work was done under contract for [Open Philanthropy](https://www.openphilanthropy.org/). Open Philanthropy plans to use this tool as one input into the decision of whether to fund randomized trials in global health or development. Because the concept is quite general, we hope that the tool can also be useful to others.
