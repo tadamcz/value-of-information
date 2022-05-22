@@ -82,7 +82,14 @@ Therefore, when `B` is normally distributed with mean `T` (the only distribution
 equation solver to find the threshold value `B=b_t`, such that `E[T|b]>bar` if and only if `b>b_t`. This is hundreds of times faster than explicitly computing the posterior probability distribution `P(T|b_i)` in each iteration (which can be achieved by passing `force_explicit=True`).
 
 ## Cost-benefit analysis
-The console output is relatively self-explanatory. You can also read [`signal_cost_benefit.py`](value_of_information/signal_cost_benefit.py), which is short and simple. A more detailed explanation may be added here later.
+The cost-benefit analysis assumes:
+- "choosing" the certain or the uncertain option means spending one's capital implementing that option. The amount of capital may vary.
+- `T` and the bar are expressed in terms of value realised _per unit of capital_. For example, "deaths averted per million dollars" or "new clients per dollar".
+- The decision-maker can choose to spend `signal_cost` to acquire the signal. All other capital is spent implementing the option with the highest expected value.
+
+This model is well-suited when choosing between different options that can absorb flexible amounts of capital (e.g. venture capital, ad spend, or philanthropy). However, it should be easy to model the costs and benefits differently, while leaving unchanged the functionality concerned with quantifying the value of information, which is more general and is the main contribution of this package. 
+
+The console output should be relatively self-explanatory. The calculations can be read in [`signal_cost_benefit.py`](value_of_information/signal_cost_benefit.py).
 
 # Installation
 
