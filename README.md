@@ -37,8 +37,11 @@ expression above.
 
 In this package, we make some simplifying assumptions:
 
-* We model the decision problem as a binary choice between an option whose value is known with certainty (the "bar"),
-  and an uncertain option whose value is `T`.
+* We model the decision problem as a binary choice between
+    * **the bar**: an option with an expected value of `bar` about which we cannot gain additional information. (It's
+      irrelevant whether or not there is uncertainty over this option, what matters here is that we cannot gain
+      additional information.)
+    * **the object of study**: an uncertain option whose value is `T`, about which we can gain additional information .
 * The decision-maker is taken to be risk-neutral (and the expected VOI is computed from a risk-neutral stance as well).
 * The problem is one-dimensional, i.e. `T` and `B` follow one-dimensional distributions.
 * Currently, only one distribution family is supported for `B`: `B` has a normal distribution with unknown mean `T` and
@@ -53,11 +56,11 @@ iteration `i` of the simulation:
 2. We draw an estimate `b_i` from `Normal(T_i,sd(B))`.
 3. We can then calculate the decision that would be made with and without access to the signal:
     * _With the signal._ The decision-maker's subjective posterior expected value is `E[T|b_i]`. If `E[T|b_i]>bar`, the
-      decision-maker chooses the uncertain option, otherwise they choose the certain option.
-    * _Without the signal._ If `E[T]>bar`, the decision-maker chooses the uncertain option, otherwise they choose the
-      certain option.
-5. We calculate the decision-maker's payoffs with and without access to the signal. If choosing the uncertain option,
-   they get a payoff of `T_i`; the payoff for the certain option is `bar`.
+      decision-maker chooses the object of study, otherwise they choose the bar.
+    * _Without the signal._ If `E[T]>bar`, the decision-maker chooses the object of study, otherwise they choose the
+      bar.
+5. We calculate the decision-maker's payoffs with and without access to the signal. If choosing the object of study,
+   they get a payoff of `T_i`; the payoff for the bar is `bar`.
 
 In this implementation, we take that expectation according to the decision maker's prior `P(T)` (this is because `T_i`s
 are drawn from `P(T)` in step 1). In a subjective bayesian sense, this means that we compute the expected VOI by the
@@ -83,8 +86,8 @@ equation solver to find the threshold value `B=b_t`, such that `E[T|b]>bar` if a
 
 ## Cost-benefit analysis
 The cost-benefit analysis assumes:
-- "choosing" the certain or the uncertain option means spending one's capital implementing that option. The amount of capital may vary.
-- `T` and the bar are expressed in terms of value realised _per unit of capital_. For example, "deaths averted per million dollars" or "new clients per dollar".
+- "Choosing" the bar or the object of study means spending one's capital implementing that option. The amount of capital may vary.
+- `T` and `bar` are expressed in terms of value realised _per unit of capital_. For example, "deaths averted per million dollars" or "new clients per dollar".
 - The decision-maker can choose to spend `signal_cost` to acquire the signal. All other capital is spent implementing the option with the highest expected value.
 
 This model is well-suited when choosing between different options that can absorb flexible amounts of capital (e.g. venture capital, ad spend, or philanthropy). However, it should be easy to model the costs and benefits differently, while leaving unchanged the functionality concerned with quantifying the value of information, which is more general and is the main contribution of this package. 
