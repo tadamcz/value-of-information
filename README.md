@@ -14,46 +14,62 @@ Sometimes, the information we gain tells us that one action is _certain_ to be b
 that tails came up in a coin toss implies we should bet on tails). But often the information is imperfect, and can only
 pull our decision in the direction of optimality, in expectation.
 
-Such imperfect information can be modelled as observing a random variable (or signal) `B`that is informative about the
-true state of the world but contains some noise. The expected value of information is the expected benefit from
+Such imperfect information can be modelled as observing a random variable (or signal) `B` that is informative about the
+true state of the world `T` but contains some noise. The expected value of information is the expected benefit from
 observing this random variable.
 
-If the draw we observe is `b`, the true value of the quantity is `T` and `V` is the payoff function, the realised value
-of information is:
+The realised value of information is:
 
 ```
-V(decision_with_signal(b), T) - V(decision_without_signal, T) 
+VOI(T,B) = U(decision(B), T) - U(decision_0, T) 
 ```
 
-If a signal of `b` fails to change our decision, the value we realised is zero (regardless of `T`). This is intuitive.
+where `U` is the payoff function, `decision` is the decision function when we have access to the signal, and `decision_0` is the decision we make in the absence of the signal.
+
+If a signal of `B` fails to change our decision, the value we realised is zero (regardless of `T`). This is intuitive.
 
 When the signal does change our decision, the size of the benefit depends on the true state `T`, and on our decision
 function `decision_with_signal`, which in turn depends on how the distribution of `B` is related to `T`.
 
-We can find the expected value of information by taking an appropriate expectation over states of the world of the
-expression above.
+For each `T=t`, the expected value of information is
+
+```
+VOI(t) = E_B[VOI(T,B) | T=t] = E_B[U(decision(B), T) - U(decision_0, T) | T=t]
+```
+
+where `E_B` indicates that we're taking expectations with respect to (i.e. over the distribution of) `B`.
+
+We can then find the entirely unconditional expected VOI `V` by taking expectations of the above with respect to `T`:
+
+```
+V = E_T[ E_B[VOI(t,b) | T=t]] 
+```
+
+We might also, by the law of iterated expectations, write `V=E[VOI(t,b)]`, where the expectation sign without a subscript means the expectation is taken with respect to the joint distribution of `T` and `B`. The more explicit version is helpful for remembering that `V` is a double integral.
+
+
 
 ## Model details
 
 In this package, we make some simplifying assumptions:
 
-* We model the decision problem as a binary choice between
-    * **the bar**: an option with an expected value of `bar` about which we cannot gain additional information. (It's
-      irrelevant whether or not there is uncertainty over this option, what matters here is that we cannot gain
-      additional information.)
-    * **the object of study**: an uncertain option whose value is `T`, about which we can gain additional information .
-* The decision-maker is taken to be risk-neutral (and the expected VOI is computed from a risk-neutral stance as well).
+* We model the decision problem as a **binary choice**.
+    * This means `decision(B)` can take only two values `d_1` and `d_2` (and `decision_0` is equal to one of them).
+    * This simplifies `VOI(t)` in the following way. For each `t`, instead of taking expectations of `VOI(t,B)` over infinitely many values of `B|T=t`, we can ask: what is the probability of each decision, i.e. what are the probabilities `P(d_1|T=t)` and `P(d_2|T=t)`? `V` goes from a double integral to a single integral. 
+* The binary choice is between:
+    * **the bar** (`d_1`): an option with an expected payoff of `bar` about which we cannot gain additional information. Expressed mathematically, the inability to gain additional information means that `U(d_1, T)` is independent of `T`. So we can write `E[U(d_1)]=bar`. (It's
+      irrelevant whether or not there is uncertainty over the payoff `U(d_1)`, what matters here is that this uncertainty is independent of `T` so we cannot gain additional information).
+    * **the object of study** (`d_2`): an uncertain option whose payoff is `T`, about which we can gain additional information. The simplification here is that `U(d_2)=T`, but a more complicated dependence `U(d_2)=f(T)` could easily be modeled.
+* The decision-maker is rational, i.e. upon receiving a signal of `b` they update their prior `P(T)` to `P(T|B=b)`. They risk-neutrally maximise expected `U`, which means they choose the object of study if and only if `E[T|B=b]>bar` (or `E[T]>bar` in the absence of the signal).
 * The problem is one-dimensional, i.e. `T` and `B` follow one-dimensional distributions.
 * Currently, only one distribution family is supported for `B`: `B` has a normal distribution with unknown mean `T` and
   known standard deviation.
 
 The prior over `T` can be any one-dimensional SciPy continuous distribution.
 
-This tool uses a simulation to approximate the expectation mentioned in the previous section. Specifically, for each
-iteration `i` of the simulation:
-
-1. We draw a true value `T_i` from the decision-maker's prior `P(T)`.
-2. We draw an estimate `b_i` from `Normal(T_i,sd(B))`.
+To recapitulate, we can think about how we might simulate this process. In each simulation iteration `i`:
+1. We draw a true value `t_i` from the decision-maker's prior `P(T)`.
+2. We draw an estimate `b_i` from `Normal(t_i,sd(B))`.
 3. We can then calculate the decision that would be made with and without access to the signal:
     * _With the signal._ The decision-maker's subjective posterior expected value is `E[T|b_i]`. If `E[T|b_i]>bar`, the
       decision-maker chooses the object of study, otherwise they choose the bar.
@@ -62,7 +78,9 @@ iteration `i` of the simulation:
 5. We calculate the decision-maker's payoffs with and without access to the signal. If choosing the object of study,
    they get a payoff of `T_i`; the payoff for the bar is `bar`.
 
-In this implementation, we take that expectation according to the decision maker's prior `P(T)` (this is because `T_i`s
+Drawing `t_i` corresponds to the outer expectation `E_T[]` discussed above, and drawing `b_i` (dependent on `t_i`) corresponds to the inner expectation `E_B[]`. As we noted, for a discrete choice (in our case a binary one) the inner expectation does not require an integral, and indeed when running a simulation explicitly drawing a `b_i` like in step 2 would be computationally inefficient.
+
+Astute readers will have noticed another simplification. In calculating `V`, we take expectations over `T` according to the decision maker's prior `P(T)` (this is because `T_i`s
 are drawn from `P(T)` in step 1). In a subjective bayesian sense, this means that we compute the expected VOI by the
 lights of the decision-maker; a frequentist interpretation might be that the decision situation is drawn from a larger
 reference class in which `T` follows `P(T)`, and we are computing the average VOI in that class.
@@ -71,8 +89,14 @@ These concepts need not coincide in general. We could without difficulty model t
 to `P(T)`, but nonetheless compute the value of information by the lights of another actor who believes `Q(T)` (or the
 VOI in a reference class following `Q(T)`).
 
-## Computational approach for normal likelihood
-We make use of the following fact to speed up the simulation: 
+Analogously, `V` is calculated according to the same values as the decision-maker's values, i.e. it is modeled from a risk-neutral `U`-maximisation perspective, but this need not be so. (Technically this assumption is already present in the first section of this document).
+
+## Computational shortcut: skipping the decision-maker's Bayesian update
+For each value of `T=t` that we consider (in an integral or a simulation), we have to calculate `P(d_2|T=t)`, the probability that the object of study will be chosen.
+
+Since the decision-maker does this if and only if `E[T|b]>bar`, this may seem to require computing the posterior expected value `E[T|b]` for every `b`-value. This would defeat the advantage (at least computationally) of the simpler `P(d_2|T=t)` over `VOI(t)`; we would do just as well to explicitly integrate `VOI(t,B)` over the distribution of `B`.
+
+Luckily, we can make use of the following fact to avoid explicitly computing the posterior each time: 
 
 > When the signal `B` is normally distributed, with
 mean `T`, then, for any prior distribution over `T`, `E[T|B=b]` is increasing in `b`.
@@ -81,8 +105,23 @@ This was shown by [Andrews et al. 1972](assets/andrews1972.pdf) (Lemma 1). It wa
 by [Ma 1999](assets/ma1999.pdf) (Corollary 1.3) to any likelihood function arising from a `B` that (i) has `T` as a location
 parameter, and (ii) is strongly unimodally distributed.
 
-Therefore, when `B` is normally distributed with mean `T` (the only distribution currently supported), by default we run a numerical
-equation solver to find the threshold value `B=b_t`, such that `E[T|b]>bar` if and only if `b>b_t`. This is hundreds of times faster than explicitly computing the posterior probability distribution `P(T|b_i)` in each iteration (which can be achieved by passing `force_explicit=True`).
+In these cases, instead of explicitly computing the posterior for every `b`-value, we run a numerical equation solver to find the threshold value `b_*` ("b-star"), such that `E[T|b]>bar` if and only if `b>b_*`.
+
+This is hundreds of times faster than explicitly computing the posterior probability distribution `P(T|b_i)` in each iteration (which can be achieved by passing `force_explicit=True`).
+
+Note: Currently `B~Normal(T,sd(B))` is the only distribution supported for `B`, so this computational shortcut is always applicable (i.e. "these cases" are all cases).
+
+## Closed-form solutions
+If `P(T|B)` can be calculated in analytically, it follows that `V` itself can be calculated analytically. In that case, there is no additional benefit to using this software.
+
+Tests make use of these analytic results to check the correctness of this package. (A dependency of this package, [`tadamcz/bayes-continuous`](https://github.com/tadamcz/bayes-continuous), uses closed form solutions as well). 
+
+## Example: VOI for venture capital [TODO]
+The previous section is quite abstract. It may be helpful to walk through a concrete example where our simplifications are reasonable, and the model is therefore a suitable one.
+
+## Estimating expectations
+These could be estimated either by Monte Carlo simulation, or by explicit numerical integration. The current version uses simulation.
+
 
 ## Cost-benefit analysis
 The cost-benefit analysis assumes:
