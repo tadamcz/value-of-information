@@ -27,23 +27,13 @@ class Test_sdB:
 			means.append(mean)
 		assert is_decreasing(means)
 
-	def test(self):
-		central_simulation_inputs = SimulationInputs(
-			prior=stats.norm(1, 1),
-			sd_B=1,
-			bar=2
-		)
-		self.helper(central_simulation_inputs, iterations=2_000, num_sds=2)
-
-	@pytest.mark.extra_slow
 	@pytest.mark.parametrize('central_simulation_inputs', gen_log_norm_norm.linsp(4), ids=shared.simulation_input_idfn)
-	def test_extra_slow_lognorm_prior(self, central_simulation_inputs):
+	def test_lognorm(self, central_simulation_inputs):
 		self.helper(central_simulation_inputs, iterations=150_000, num_sds=3)
 
-	@pytest.mark.extra_slow
 	@pytest.mark.parametrize('central_simulation_inputs', gen_norm_norm.linsp(6) + gen_norm_norm.from_seed(3),
 							 ids=shared.simulation_input_idfn)
-	def test_extra_slow_normal_prior(self, central_simulation_inputs):
+	def test_norm(self, central_simulation_inputs):
 		with patch('value_of_information.bayes.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
 			self.helper(central_simulation_inputs, iterations=150_000, num_sds=3)
@@ -67,16 +57,7 @@ class Test_sd_prior_T:
 				means.append(mean)
 			assert is_increasing(means)
 
-	def test(self):
-		central_simulation_inputs = SimulationInputs(
-			prior=stats.norm(1, 1),
-			sd_B=1,
-			bar=2
-		)
-		self.helper(central_simulation_inputs, iterations=2_000, num_sds=2)
-
-	@pytest.mark.extra_slow
 	@pytest.mark.parametrize('central_simulation_inputs', gen_norm_norm.linsp(6) + gen_norm_norm.from_seed(3),
 							 ids=shared.simulation_input_idfn)
-	def test_extra_slow(self, central_simulation_inputs):
+	def test(self, central_simulation_inputs):
 		self.helper(central_simulation_inputs, iterations=150_000, num_sds=3)

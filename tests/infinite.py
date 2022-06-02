@@ -79,8 +79,5 @@ class TestInfiniteSample:
 		"""
 		self.mean_helper(iterations=5_000, relative_tolerance=5 / 100)
 
-	# extra_slow below
-
-	@pytest.mark.extra_slow
 	def test_mean_strict(self):
 		self.mean_helper(relative_tolerance=1 / 100, iterations=50_000)

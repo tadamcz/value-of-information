@@ -226,12 +226,6 @@ CostBenefitsExecutor(inputs=cb_inputs, simulation_run=simulation_run).execute()
 poetry run pytest -n auto
 ```
 
-# Extra-slow tests
-
-Achieving high precision means some tests take very long to run (the standard error is proportional to 1/sqrt(n) which
-declines very slowly). These tests are not run by default. They can be run (e.g. in the cloud) by
-executing `pytest_with_extra_slow.sh`.
-
 # Origin of this project
 
 This work was done under contract for [Open Philanthropy](https://www.openphilanthropy.org/). Open Philanthropy plans to use this tool as one input into the decision of whether to fund randomized trials in global health or development. Because the concept is quite general, we hope that the tool can also be useful to others.
