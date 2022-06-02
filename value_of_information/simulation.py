@@ -60,7 +60,7 @@ class SimulationInputs:
 
 
 class SimulationExecutor:
-	def __init__(self, input: SimulationInputs, force_explicit_bayes=False, force_explicit_b_draw=True, print_every=None, print=True):
+	def __init__(self, input: SimulationInputs, force_explicit_bayes=False, force_explicit_b_draw=True, print_every=None):
 		self.input = input
 		self.do_explicit_bayes = force_explicit_bayes or (not self.input.likelihood_is_normal)
 		self.do_explicit_b_draw = force_explicit_b_draw or self.input.continuous_choice
@@ -217,6 +217,7 @@ class SimulationExecutor:
 			'w_out_signal': decision_w_out_signal,
 
 			'E. value_w_signal': exp_value_w_signal,
+			# todo: change "value" language to "payoff" for consistency with README
 			'value_w_out_signal': value_w_out_signal,
 
 			'benefit_signal': benefit_signal,
