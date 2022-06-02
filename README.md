@@ -151,8 +151,8 @@ iff
 iff
 
      sd(B)^2 * (bar - μ)    
-b >  ─────────────── + bar       
-         σ^2        
+b >  ─────────────────── + bar       
+            σ^2        
 ```
 
 It may be possible to use this result to directly calculate `V` in closed form as well, but I have not yet found such an expression.
