@@ -25,8 +25,8 @@ def helper(inputs, iterations, relative_tolerance):
 		assert b_draw_yes.mean_voi() == pytest.approx(
 			b_draw_no.mean_voi(), rel=relative_tolerance)
 
-		assert np.all(b_draw_no.get_column('b_i') is None)
-		assert np.all(b_draw_yes.get_column('b_i') is not None)
+		assert np.all(b_draw_no.get_column('b_i').to_numpy() == None)
+		assert np.all(b_draw_yes.get_column('b_i').to_numpy() != None)
 
 @pytest.mark.parametrize('simulation_inputs',
 						 argvalues=gen_lognorm_norm.linsp(4) + gen_norm_norm.linsp(6),
