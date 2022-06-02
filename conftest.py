@@ -16,7 +16,7 @@ n_random_seeds = int(os.environ.get('N_RAND_SEED', 10))
 @pytest.fixture(autouse=True, params=seeds.RANDOM_SEEDS[:n_random_seeds], ids=seed_idfn, scope='session')
 def random_seed(request):
 	"""
-	autouse:
+	autouse:  # todo remove autouse: this should not be used for deterministic tests
 	this fixture will be used by every test, even if not explicitly requested.
 
 	params:
