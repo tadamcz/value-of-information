@@ -59,7 +59,7 @@ In this package, we make some simplifying assumptions:
 * The binary choice is between:
     * **the bar** (`d_1`): an option with an expected payoff of `bar` about which we cannot gain additional information. Expressed mathematically, the inability to gain additional information means that `U(d_1, T)` is independent of `T`. So we can write `E[U(d_1)]=bar`. (It's
       irrelevant whether or not there is uncertainty over the payoff `U(d_1)`, what matters here is that this uncertainty is independent of `T` so we cannot gain additional information).
-    * **the object of study** (`d_2`): an uncertain option whose payoff is `T`, about which we can gain additional information. The simplification here is that `U(d_2)=T`, but a more complicated dependence `U(d_2)=f(T)` could easily be modeled.
+    * **the object of study** (`d_2`): an uncertain option whose payoff is `T`, about which we can gain additional information. The simplification here is that `U(d_2, T)=T`, but a more complicated dependence `U(d_2, T)=f(T)` could easily be modeled.
 * The decision-maker is rational, i.e. upon receiving a signal of `b` they update their prior `P(T)` to `P(T|B=b)`. They risk-neutrally maximise expected `U`, which means they choose the object of study if and only if `E[T|B=b]>bar` (or `E[T]>bar` in the absence of the signal).
 * The problem is one-dimensional, i.e. `T` and `B` follow one-dimensional distributions.
 * Currently, only one distribution family is supported for `B`: `B` has a normal distribution with unknown mean `T` and
