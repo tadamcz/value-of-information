@@ -52,7 +52,7 @@ class TestInfiniteSample:
 				prior=prior,
 				sd_B=1e-12,
 				bar=bar)
-			return SimulationExecutor(inputs, force_explicit=True, print_every=1e9).execute(iterations=iterations)
+			return SimulationExecutor(inputs, force_explicit_bayes=True, print_every=1e9).execute(iterations=iterations)
 
 	def test_each_iteration(self):
 		"""
