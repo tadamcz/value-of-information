@@ -130,7 +130,7 @@ class SimulationExecutor:
 
 			# Repeatedly calling `.sem()` is expensive
 			if iterations is None and len(this_run) % 10 == 0:
-				std_err = this_run.standard_error_mean_benefit_signal()
+				std_err = this_run.standard_error_mean_voi()
 				mean = this_run.mean_voi()
 				if std_err < convergence_target * mean:
 					this_run.print_intermediate()
@@ -144,7 +144,7 @@ class SimulationExecutor:
 		else:
 			print(
 				f"Simulation ended after {len(this_run)} iterations. "
-				f"Standard error of mean benefit from signal: {round_sig(this_run.standard_error_mean_benefit_signal())})")
+				f"Standard error of mean benefit from signal: {round_sig(this_run.standard_error_mean_voi())})")
 
 		this_run.print_final()
 
@@ -161,38 +161,6 @@ class SimulationExecutor:
 		b_i_distance = b_i_distances[i]
 		b_i = T_i + b_i_distance
 
-		iteration_output = self.iteration_explicit_b(T_i, b_i, threshold_b)
-
-		return iteration_output
-
-	def iteration_decision_distribution(self, T_i, threshold_b):
-		"""
-		For each `t`, instead of taking expectations of `VOI(t,B)` over infinitely many values of `B|T=t`, we can ask:
-		what is the pr of each decision, i.e. what are the probabilities `P(d_1|T=t)` and `P(d_2|T=t)`?
-		`V` goes from a double integral to a single integral.
-
-		Reminder:
-		```
-		VOI(t,b) = U(decision(b), t) - U(decision_0, t)
-		```
-		"""
-		distribution_w_signal = decision_distribution.with_signal(self.input.prior_T, T_i, self.input.sd_B,
-																  self.input.bar, threshold_b,
-																  explicit_bayes=self.do_explicit_bayes)
-
-		decision_no_signal = decision.no_signal(self.input.prior_ev, self.input.bar)
-
-		no_signal = decision_no_signal
-		no_signal["payoff"] = voi.payoff(no_signal["decision"], T_i, self.input.bar)
-
-		with_signal = distribution_w_signal
-		payoff_d_1 = voi.payoff("d_1", T_i, self.input.bar)
-		payoff_d_2 = voi.payoff("d_2", T_i, self.input.bar)
-		with_signal["expected_payoff"] = payoff_d_1 * with_signal["pr_d_1"] + payoff_d_2 * with_signal["pr_d_2"]
-
-		return self.iteration_display_dict(no_signal, with_signal, T_i, b_i=None)
-
-	def iteration_explicit_b(self, T_i, b_i, threshold_b=None) -> dict:
 		no_signal = decision_explicit_b.no_signal(self.input.prior_ev, self.input.bar)
 
 		if self.do_explicit_bayes:
@@ -208,9 +176,36 @@ class SimulationExecutor:
 		no_signal["payoff"] = voi.payoff(no_signal["decision"], T_i, self.input.bar)
 		with_signal["payoff"] = voi.payoff(with_signal["decision"], T_i, self.input.bar)
 
-		return self.iteration_display_dict(no_signal, with_signal, T_i, b_i)
+		return self.iteration_to_dict(no_signal, with_signal, T_i, b_i)
 
-	def iteration_display_dict(self, no_signal: dict, with_signal: dict, T_i, b_i):
+	def iteration_decision_distribution(self, T_i, threshold_b):
+		"""
+		When dealing with a binary choice, for each `t` we can ask: what is the pr of each decision, i.e. what are the
+		probabilities `P(d_1|T=t)` and `P(d_2|T=t)`?
+
+		This is an an alternative to explicitly drawing `b_i`s.
+		"""
+		distribution_w_signal = decision_distribution.with_signal(self.input.prior_T, T_i, self.input.sd_B,
+																  self.input.bar, threshold_b,
+																  explicit_bayes=self.do_explicit_bayes)
+
+		decision_no_signal = decision.no_signal(self.input.prior_ev, self.input.bar)
+
+		no_signal = decision_no_signal
+		no_signal["payoff"] = voi.payoff(no_signal["decision"], T_i, self.input.bar)
+
+		with_signal = distribution_w_signal
+		payoff_d_1 = voi.payoff("d_1", T_i, self.input.bar)
+		payoff_d_2 = voi.payoff("d_2", T_i, self.input.bar)
+		with_signal["expected_payoff"] = payoff_d_1 * with_signal["pr_d_1"] + payoff_d_2 * with_signal["pr_d_2"]
+
+		return self.iteration_to_dict(no_signal, with_signal, T_i, b_i=None)
+
+	def iteration_to_dict(self, no_signal: dict, with_signal: dict, T_i, b_i):
+		"""
+		The final dictionary that will be used to store information about this iteration. At the end of the simulation,
+		these dictionaries will become rows in a Pandas DataFrame.
+		"""
 		ret = {
 			'T_i': T_i,
 			'b_i': b_i,
@@ -229,6 +224,7 @@ class SimulationExecutor:
 		if self.do_explicit_b_draw:
 			ret.update({
 				'w_signal': with_signal["decision"],
+				'E[T|b_i]>bar': with_signal["decision"] == "d_2",
 				'payoff_w_signal': with_signal["payoff"],
 				'VOI': with_signal["payoff"] - no_signal["payoff"],
 			})
@@ -270,12 +266,12 @@ class SimulationRun:
 	def mean_voi(self):
 		return statistics.fmean([i[self.voi_key] for i in self.iterations_data])
 
-	def standard_error_mean_benefit_signal(self):
+	def standard_error_mean_voi(self):
 		return scipy.stats.sem([i[self.voi_key] for i in self.iterations_data])
 
 	def print_intermediate(self):
 		iteration_number = len(self.iterations_data)
-		std_err = self.standard_error_mean_benefit_signal()
+		std_err = self.standard_error_mean_voi()
 		mean = self.mean_voi()
 		information = {
 			"Iteration of simulation": iteration_number,
@@ -304,7 +300,7 @@ class SimulationRun:
 			print(pd.DataFrame(self.iterations_data))
 
 		mean_benefit_signal = self.mean_voi()
-		sem_benefit_signal = self.standard_error_mean_benefit_signal()
+		sem_benefit_signal = self.standard_error_mean_voi()
 		iterations = len(self.iterations_data)
 
 		if mean_benefit_signal < 0:
@@ -322,10 +318,9 @@ class SimulationRun:
 			})
 
 		if self.do_explicit_b_draw:
-			decisions_with_signal = self.get_column("w_signal").to_numpy()
 			information.update({
 				"Fraction of iterations where E[T|b_i] > bar":
-					sum(decisions_with_signal=="d_2") / iterations,
+					self.get_column("E[T|b_i]>bar").sum() / iterations,
 			})
 
 		quantiles = [0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, .9, 0.95, .99, .999]
