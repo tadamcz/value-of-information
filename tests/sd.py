@@ -22,7 +22,7 @@ class Test_sdB:
 		means = []
 		for sd_B in list_sd_Bs:
 			central_simulation_inputs.sd_B = sd_B
-			mean = SimulationExecutor(central_simulation_inputs, print_every=1e9).execute(
+			mean = SimulationExecutor(central_simulation_inputs).execute(
 				iterations=iterations).mean_voi()
 			means.append(mean)
 		assert is_decreasing(means)
@@ -52,7 +52,7 @@ class Test_sd_prior_T:
 			means = []
 			for sd_T in list_sd_Ts:
 				central_simulation_inputs.prior_T = stats.norm(central_mean, sd_T)
-				mean = SimulationExecutor(central_simulation_inputs, print_every=1e9).execute(
+				mean = SimulationExecutor(central_simulation_inputs).execute(
 					iterations=iterations).mean_voi()
 				means.append(mean)
 			assert is_increasing(means)

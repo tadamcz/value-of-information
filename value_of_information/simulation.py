@@ -2,7 +2,7 @@ from __future__ import annotations  # This will become the default in Python 3.1
 
 import statistics
 import warnings
-
+import os
 import numpy as np
 import pandas as pd
 import scipy.stats
@@ -270,6 +270,8 @@ class SimulationRun:
 		return scipy.stats.sem([i[self.voi_key] for i in self.iterations_data])
 
 	def print_intermediate(self):
+		if "PYTEST_CURRENT_TEST" in os.environ:
+			return
 		iteration_number = len(self.iterations_data)
 		std_err = self.standard_error_mean_voi()
 		mean = self.mean_voi()
@@ -286,7 +288,8 @@ class SimulationRun:
 		return df[key]
 
 	def print_final(self):
-
+		if "PYTEST_CURRENT_TEST" in os.environ:
+			return
 		utils.print_wrapped(
 			f"\nFor each iteration_explicit_b i of the simulation, we draw a true value T_i from the prior, and we draw "
 			"an estimate b_i from Normal(T_i,sd(B)). The decision-maker cannot observe T_i, their subjective "

@@ -8,9 +8,9 @@ from value_of_information.simulation import SimulationExecutor
 
 
 def helper(inputs, iterations, relative_tolerance):
-	b_draw_yes = SimulationExecutor(inputs, force_explicit_b_draw=True, print_every=1e9).execute(
+	b_draw_yes = SimulationExecutor(inputs, force_explicit_b_draw=True).execute(
 		iterations=iterations)
-	b_draw_no = SimulationExecutor(inputs, force_explicit_b_draw=False, print_every=1e9).execute(
+	b_draw_no = SimulationExecutor(inputs, force_explicit_b_draw=False).execute(
 		iterations=iterations // 10)
 
 	assert np.all(b_draw_no.get_column('b_i').to_numpy() == None)

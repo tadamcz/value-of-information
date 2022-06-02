@@ -18,8 +18,8 @@ class TestThresholdvsExplicit:
 	def helper(self, inputs, iterations, relative_tolerance):
 		with patch('value_of_information.bayes.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
-			explicit = SimulationExecutor(inputs, force_explicit_bayes=True, print_every=1e9).execute(iterations=iterations)
-			threshold = SimulationExecutor(inputs, force_explicit_bayes=False, print_every=1e9).execute(iterations=iterations)
+			explicit = SimulationExecutor(inputs, force_explicit_bayes=True).execute(iterations=iterations)
+			threshold = SimulationExecutor(inputs, force_explicit_bayes=False).execute(iterations=iterations)
 
 			assert explicit.mean_voi() == pytest.approx(
 				threshold.mean_voi(), rel=relative_tolerance)
