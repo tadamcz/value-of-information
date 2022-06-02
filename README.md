@@ -77,7 +77,9 @@ To recapitulate, it may be helpful to think about how we might simulate this pro
 5. We calculate the decision-maker's payoffs with and without access to the signal. If choosing the object of study,
    they get a payoff of `T_i`; the payoff for the bar is `bar`.
 
-Drawing `t_i` corresponds to the outer expectation `E_T[]` discussed above, and drawing `b_i` (dependent on `t_i`) corresponds to the inner expectation `E_B[]`. As we noted, for a discrete choice (in our case a binary one) the inner expectation does not require an integral, so explicitly drawing a `b_i` like in step 2 is not necessary, but it will give a correct estimate for `V`. In addition, explicitly drawing a `b_i` might be easier to think about and check the correctness of: each simulation iteration considers a fully specified world + observation pair `t_i,b_i` drawn from the joint distribution of `T` and `B`.
+Drawing `t_i` corresponds to the outer expectation `E_T[]` discussed above, and drawing `b_i` (dependent on `t_i`) corresponds to the inner expectation `E_B[]`. As we noted, for a discrete choice (in our case a binary one) the inner expectation does not require an integral, so explicitly drawing a `b_i` like in step 2 is not necessary, but it will give a correct estimate for `V`. In addition, explicitly drawing a `b_i` might be easier to think about and check the correctness of: each simulation iteration considers a fully specified world + observation pair `t_i,b_i` drawn from the joint distribution of `T` and `B`. 
+
+Drawing `b_i` can be disabled by setting `force_explicit_b_draw=False`
 
 
 ### Remarks
