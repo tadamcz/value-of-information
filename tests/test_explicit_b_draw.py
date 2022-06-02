@@ -33,4 +33,4 @@ class TestBDraw:
 							 argvalues=gen_lognorm_norm.linsp(8) + gen_norm_norm.linsp(12),
 							 ids=shared.simulation_input_idfn)
 	def test(self, simulation_inputs):
-		self.helper(inputs=simulation_inputs, iterations=5_000_000, relative_tolerance=2 / 100)
+		self.helper(inputs=simulation_inputs, iterations=5_000_000, relative_tolerance=5 / 100)
