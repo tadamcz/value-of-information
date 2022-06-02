@@ -1,12 +1,14 @@
 from bayes_continuous.likelihood_func import NormalLikelihood
 from scipy import optimize
 from sortedcontainers import SortedDict
+
 from value_of_information import utils, bayes
 from value_of_information.rounding import round_sig
 
 
 def threshold_b(prior_T, sd_B, bar):
 	"""
+
 	We want to solve the following for b:
 	```
 	posterior_ev(b, ...) = bar
@@ -20,6 +22,7 @@ def threshold_b(prior_T, sd_B, bar):
 	"""
 
 	posterior_ev_sorted = SortedDict()  # Sorted by key
+
 	def f_to_solve(b):
 		likelihood = NormalLikelihood(b, sd_B)
 		posterior = bayes.posterior(prior_T, likelihood)
@@ -58,3 +61,12 @@ def threshold_b(prior_T, sd_B, bar):
 
 	return x0
 
+
+def payoff(decision, T, bar):
+	if decision == "d_1":
+		return bar
+	elif decision == "d_2":
+		return T
+
+def value_of_information(decision_with_signal, decision_no_signal, T, bar):
+	return payoff(decision_with_signal, T, bar) - payoff(decision_no_signal, T, bar)

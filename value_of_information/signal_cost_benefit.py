@@ -44,7 +44,7 @@ class CostBenefitsExecutor:  # todo add tests
 							f"mean {round_sig(prior_ev, 2)}) and the bar ({self.sim_run.bar}) are expressed in {prior_units}.")
 
 		# Output:
-		signal_benefit_per_usd_spent = self.sim_run.mean_benefit_signal()
+		signal_benefit_per_usd_spent = self.sim_run.mean_voi()
 		capital_after_signal = self.inputs.capital - self.inputs.signal_cost
 		value_with_signal = capital_after_signal * (signal_benefit_per_usd_spent + no_signal_best_option)
 		value_without_signal = self.inputs.capital * no_signal_best_option

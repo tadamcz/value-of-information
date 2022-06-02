@@ -43,6 +43,6 @@ def test(simulation_inputs):
 
 	voi_integral = integrate.quad(f_to_integrate, a=left, b=right)[0]
 
-	voi_simulation = SimulationExecutor(simulation_inputs).execute(iterations=500_000).mean_benefit_signal()
+	voi_simulation = SimulationExecutor(simulation_inputs).execute(iterations=500_000).mean_voi()
 
 	assert voi_simulation == pytest.approx(voi_integral, rel=5/100)

@@ -6,11 +6,10 @@ import warnings
 import numpy as np
 import pandas as pd
 import scipy.stats
-from bayes_continuous.likelihood_func import NormalLikelihood
 from scipy import stats
 from scipy.stats._distn_infrastructure import rv_frozen
 
-from value_of_information import constants, voi, bayes
+from value_of_information import constants, voi, decision_explicit_b, decision_distribution, decision
 from value_of_information import utils
 from value_of_information.rounding import round_sig
 
@@ -36,7 +35,7 @@ class SimulationInputs:
 		self.population_std_dev = population_std_dev  # Assumed to be known
 		self.bar = bar
 		self.likelihood_is_normal = True  # Always the case for now
-		self.continuous_choice = False  # Always the case for now
+		self.discrete_choice = True  # Always the case for now
 
 	def prior_family(self):
 		if isinstance(self.prior_T, scipy.stats._distn_infrastructure.rv_frozen):
@@ -62,7 +61,7 @@ class SimulationExecutor:
 				 print_every=None):
 		self.input = input
 		self.do_explicit_bayes = force_explicit_bayes or (not self.input.likelihood_is_normal)
-		self.do_explicit_b_draw = force_explicit_b_draw or self.input.continuous_choice
+		self.do_explicit_b_draw = force_explicit_b_draw or (not self.input.discrete_choice)
 		self.print_every = print_every
 
 	def execute(self, max_iterations=None, convergence_target=0.1, iterations=None) -> SimulationRun:
@@ -90,13 +89,13 @@ class SimulationExecutor:
 
 		this_run = SimulationRun(self.input, self)
 
-		# For each iteration i of the simulation, we draw a true value T_i from the prior.
+		# For each iteration_explicit_b i of the simulation, we draw a true value T_i from the prior.
 		# For efficiency, it's better to do this outside the loop
 		# See: https://github.com/scipy/scipy/issues/9394
 		T_is = self.input.prior_T.rvs(size=max_iterations)
 
 		if self.do_explicit_b_draw:
-			# For each iteration i of the simulation, we draw a
+			# For each iteration_explicit_b i of the simulation, we draw a
 			# distance (b_i-T_i), outside the loop for efficiency.
 			# Note: this won't work for every likelihood function.
 			b_i_distances = stats.norm(0, self.input.sd_B).rvs(size=max_iterations)
@@ -125,14 +124,14 @@ class SimulationExecutor:
 			if self.do_explicit_b_draw:
 				iteration_output = self.iteration_explicit_b_draw(T_i, i, b_i_distances, sd_B_i, threshold_b)
 			else:
-				iteration_output = self.iteration_decision(T_i, threshold_b)
+				iteration_output = self.iteration_decision_distribution(T_i, threshold_b)
 
 			this_run.append(iteration_output)
 
 			# Repeatedly calling `.sem()` is expensive
 			if iterations is None and len(this_run) % 10 == 0:
 				std_err = this_run.standard_error_mean_benefit_signal()
-				mean = this_run.mean_benefit_signal()
+				mean = this_run.mean_voi()
 				if std_err < convergence_target * mean:
 					this_run.print_intermediate()
 					print(f"Converged after {len(this_run)} simulation iterations!")
@@ -162,22 +161,14 @@ class SimulationExecutor:
 		b_i_distance = b_i_distances[i]
 		b_i = T_i + b_i_distance
 
-		iteration_kwargs = {
-			'b_i': b_i,
-			'T_i': T_i,
-			'sd_B_i': sd_B_i,
-		}
-		if self.do_explicit_bayes:
-			iteration_output = self.iteration_explicit_update(**iteration_kwargs)
-		else:
-			iteration_output = self.iteration_threshold_update(threshold_b=threshold_b, **iteration_kwargs)
+		iteration_output = self.iteration_explicit_b(T_i, b_i, threshold_b)
 
 		return iteration_output
 
-	def iteration_decision(self, T_i, threshold_b):
+	def iteration_decision_distribution(self, T_i, threshold_b):
 		"""
 		For each `t`, instead of taking expectations of `VOI(t,B)` over infinitely many values of `B|T=t`, we can ask:
-		what is the probability of each decision, i.e. what are the probabilities `P(d_1|T=t)` and `P(d_2|T=t)`?
+		what is the pr of each decision, i.e. what are the probabilities `P(d_1|T=t)` and `P(d_2|T=t)`?
 		`V` goes from a double integral to a single integral.
 
 		Reminder:
@@ -185,115 +176,71 @@ class SimulationExecutor:
 		VOI(t,b) = U(decision(b), t) - U(decision_0, t)
 		```
 		"""
+		distribution_w_signal = decision_distribution.with_signal(self.input.prior_T, T_i, self.input.sd_B,
+																  self.input.bar, threshold_b,
+																  explicit_bayes=self.do_explicit_bayes)
 
-		if not self.do_explicit_bayes:
-			pr_choose_bar = stats.norm.cdf(threshold_b, loc=T_i, scale=self.input.sd_B)
-			pr_choose_object = 1 - pr_choose_bar
+		decision_no_signal = decision.no_signal(self.input.prior_ev, self.input.bar)
 
+		no_signal = decision_no_signal
+		no_signal["payoff"] = voi.payoff(no_signal["decision"], T_i, self.input.bar)
+
+		with_signal = distribution_w_signal
+		payoff_d_1 = voi.payoff("d_1", T_i, self.input.bar)
+		payoff_d_2 = voi.payoff("d_2", T_i, self.input.bar)
+		with_signal["expected_payoff"] = payoff_d_1 * with_signal["pr_d_1"] + payoff_d_2 * with_signal["pr_d_2"]
+
+		return self.iteration_display_dict(no_signal, with_signal, T_i, b_i=None)
+
+	def iteration_explicit_b(self, T_i, b_i, threshold_b=None) -> dict:
+		no_signal = decision_explicit_b.no_signal(self.input.prior_ev, self.input.bar)
+
+		if self.do_explicit_bayes:
+			with_signal = decision_explicit_b.with_signal(b_i, self.input.prior_T, self.input.sd_B, self.input.bar,
+														  explicit_bayes=True)
 		else:
-			# There should generally not be a reason to reach this path, but it could be included
-			# in the future for completeness and to give another way to test result consistency
-			raise NotImplementedError
+			with_signal = decision_explicit_b.with_signal(b_i, self.input.prior_T, self.input.sd_B, self.input.bar,
+														  threshold=threshold_b)
+			for key in ["pr_beat_bar", "posterior_ev"]:
+				no_signal[key] = None
+				with_signal[key] = None
 
-		# Without signal
-		if self.input.prior_ev > self.input.bar:
-			decision_w_out_signal = "d_2"
-			value_w_out_signal = T_i
-		else:
-			decision_w_out_signal = "d_1"
-			value_w_out_signal = self.input.bar
+		no_signal["payoff"] = voi.payoff(no_signal["decision"], T_i, self.input.bar)
+		with_signal["payoff"] = voi.payoff(with_signal["decision"], T_i, self.input.bar)
 
-		exp_value_w_signal = (pr_choose_bar * self.input.bar) + (pr_choose_object * T_i)
-		benefit_signal = exp_value_w_signal - value_w_out_signal
+		return self.iteration_display_dict(no_signal, with_signal, T_i, b_i)
 
-		iteration_output = {
-			'T_i': T_i,
-			'b_i': "NA",
-
-			'w_signal P(d_1|T_i)': pr_choose_bar,
-			'w_signal P(d_2|T_i)': pr_choose_object,
-
-			'w_out_signal': decision_w_out_signal,
-
-			'E. value_w_signal': exp_value_w_signal,
-			# todo: change "value" language to "payoff" for consistency with README
-			'value_w_out_signal': value_w_out_signal,
-
-			'benefit_signal': benefit_signal,
-		}
-
-		return iteration_output
-
-	def iteration_explicit_update(self, b_i, T_i, sd_B_i):
-		likelihood = NormalLikelihood(b_i, sd_B_i)
-		posterior = bayes.posterior(self.input.prior_T, likelihood)
-
-		return self.iteration_create_dict(posterior_explicit=posterior, T_i=T_i, b_i=b_i)
-
-	def iteration_threshold_update(self, threshold_b, b_i, T_i, sd_B_i) -> dict:
-		"""
-		When the likelihood function is normal (i.e., it arises from a normally distributed observation), we make use
-		of the following fact to speed up computation: the expected value of the posterior is increasing in the value
-		of the observation. See README.md for more detail.
-
-		So we can call this method, which only checks if the posterior expected value passes the threshold.
-		"""
-
-		if b_i > threshold_b:
-			return self.iteration_create_dict(posterior_ev_beats_bar=True, T_i=T_i, b_i=b_i)
-		else:
-			return self.iteration_create_dict(posterior_ev_beats_bar=False, T_i=T_i, b_i=b_i)
-
-	def iteration_create_dict(self, T_i, b_i, posterior_explicit=None, posterior_ev_beats_bar=None) -> dict:
-		if posterior_explicit is None and posterior_ev_beats_bar is None:
-			raise ValueError
-
-		if posterior_explicit:
-			posterior_ev = posterior_explicit.expect()
-			pr_beat_bar = 1 - posterior_explicit.cdf(self.input.bar)
-			posterior_ev_beats_bar = posterior_ev > self.input.bar
-		else:
-			# todo replace "NA" with None
-			pr_beat_bar = "NA"
-			posterior_ev = "NA"
-
-		# Without signal
-		if self.input.prior_ev > self.input.bar:
-			decision_w_out_signal = "d_2"
-			value_w_out_signal = T_i
-		else:
-			decision_w_out_signal = "d_1"
-			value_w_out_signal = self.input.bar
-
-		# With signal
-		if posterior_ev_beats_bar:
-			decision_w_signal = "d_2"
-			value_w_signal = T_i
-		else:
-			decision_w_signal = "d_1"
-			value_w_signal = self.input.bar
-
-		benefit_signal = value_w_signal - value_w_out_signal
-
-		iteration_output = {
+	def iteration_display_dict(self, no_signal: dict, with_signal: dict, T_i, b_i):
+		ret = {
 			'T_i': T_i,
 			'b_i': b_i,
-
-			'E[T|b_i]': posterior_ev,
-			# Todo fix this wrong notation: P(T|b_i>bar)
-			'P(T|b_i>bar)': pr_beat_bar,
-			'E[T|b_i]>bar': posterior_ev_beats_bar,
-
-			'w_signal': decision_w_signal,
-			'w_out_signal': decision_w_out_signal,
-
-			'value_w_signal': value_w_signal,
-			'value_w_out_signal': value_w_out_signal,
-
-			'benefit_signal': benefit_signal,
+			'w_out_signal': no_signal["decision"],
+			'payoff_w_out_signal': no_signal["payoff"],
 		}
 
-		return iteration_output
+		if self.do_explicit_bayes:
+			ret.update({
+				'E[T|b_i]': with_signal["posterior_ev"],
+				# Todo fix this wrong notation: P(T|b_i>bar)
+				'P(T|b_i>bar)': with_signal["posterior_ev"],
+				'E[T|b_i]>bar': with_signal["posterior_ev"] > self.input.bar,
+			})
+
+		if self.do_explicit_b_draw:
+			ret.update({
+				'w_signal': with_signal["decision"],
+				'payoff_w_signal': with_signal["payoff"],
+				'VOI': with_signal["payoff"] - no_signal["payoff"],
+			})
+		else:
+			ret.update({
+				'P(d_1|T_i)': with_signal["pr_d_1"],
+				'P(d_2|T_i)': with_signal["pr_d_2"],
+				'E_B[payoff_w_signal]': with_signal["expected_payoff"],
+				'E_B[VOI]': with_signal["expected_payoff"] - no_signal["payoff"],
+			})
+
+		return ret
 
 	def print_explainer(self):
 		utils.print_wrapped("We call T the parameter over which we want to conduct inference, "
@@ -309,25 +256,30 @@ class SimulationRun:
 		self.do_explicit_bayes = executor.do_explicit_bayes
 		self.do_explicit_b_draw = executor.do_explicit_b_draw
 
+		if self.do_explicit_b_draw:
+			self.voi_key = "VOI"
+		else:
+			self.voi_key = "E_B[VOI]"
+
 	def __len__(self):
 		return len(self.iterations_data)
 
 	def append(self, iteration: dict):
 		self.iterations_data.append(iteration)
 
-	def mean_benefit_signal(self):
-		return statistics.fmean([i['benefit_signal'] for i in self.iterations_data])
+	def mean_voi(self):
+		return statistics.fmean([i[self.voi_key] for i in self.iterations_data])
 
 	def standard_error_mean_benefit_signal(self):
-		return scipy.stats.sem([i['benefit_signal'] for i in self.iterations_data])
+		return scipy.stats.sem([i[self.voi_key] for i in self.iterations_data])
 
 	def print_intermediate(self):
 		iteration_number = len(self.iterations_data)
 		std_err = self.standard_error_mean_benefit_signal()
-		mean = self.mean_benefit_signal()
+		mean = self.mean_voi()
 		information = {
 			"Iteration of simulation": iteration_number,
-			"Mean benefit from signal": round_sig(mean),
+			"Mean VOI": round_sig(mean),
 			"Standard error of mean": round_sig(std_err),
 		}
 		df = pd.DataFrame([information])
@@ -340,7 +292,7 @@ class SimulationRun:
 	def print_final(self):
 
 		utils.print_wrapped(
-			f"\nFor each iteration i of the simulation, we draw a true value T_i from the prior, and we draw "
+			f"\nFor each iteration_explicit_b i of the simulation, we draw a true value T_i from the prior, and we draw "
 			"an estimate b_i from Normal(T_i,sd(B)). The decision-maker cannot observe T_i, their subjective "
 			"posterior expected value is E[T|b_i]. E[T|b_i] and P(T|b_i > bar) are only computed if "
 			"running an 'explicit' simulation. 'd_1' is the bar, and 'd_2' "
@@ -351,17 +303,17 @@ class SimulationRun:
 							   'display.width', None, 'display.precision', 4):
 			print(pd.DataFrame(self.iterations_data))
 
-		mean_benefit_signal = self.mean_benefit_signal()
+		mean_benefit_signal = self.mean_voi()
 		sem_benefit_signal = self.standard_error_mean_benefit_signal()
 		iterations = len(self.iterations_data)
 
 		if mean_benefit_signal < 0:
 			warnings.warn(
-				f"Benefit from signal is negative with {iterations} simulation iterations. Try more iterations?")
+				f"VOI is negative with {iterations} simulation iterations. Try more iterations?")
 
 		information = {
-			"Mean benefit from signal": mean_benefit_signal,
-			"Standard error of mean benefit from signal": sem_benefit_signal,
+			"Mean VOI": mean_benefit_signal,
+			"Standard error of mean VOI": sem_benefit_signal,
 		}
 
 		if self.do_explicit_bayes:
@@ -370,14 +322,20 @@ class SimulationRun:
 			})
 
 		if self.do_explicit_b_draw:
+			decisions_with_signal = self.get_column("w_signal").to_numpy()
 			information.update({
-				"Fraction of iterations where E[T|b_i] > bar": self.get_column("E[T|b_i]>bar").sum() / iterations,
+				"Fraction of iterations where E[T|b_i] > bar":
+					sum(decisions_with_signal=="d_2") / iterations,
 			})
 
 		quantiles = [0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, .9, 0.95, .99, .999]
 		for q in quantiles:
-			key = f"Quantile {q} benefit from signal"
-			information[key] = self.get_column('benefit_signal').quantile(q)
+			if self.do_explicit_b_draw:
+				key = f"Quantile {q} VOI"
+				information[key] = self.get_column('VOI').quantile(q)
+			else:
+				key = f"Quantile {q} E_B[VOI]"
+				information[key] = self.get_column('E_B[VOI]').quantile(q)
 
 		df = pd.DataFrame([information]).T
 		with pd.option_context('display.precision', 4):

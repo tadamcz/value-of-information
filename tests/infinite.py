@@ -21,7 +21,7 @@ class TestInfiniteBar:
 				study_sample_size=study_sample_size,
 				population_std_dev=population_std_dev,
 				bar=bar)
-			assert SimulationExecutor(inputs, print_every=1e9).execute(iterations=10_000).mean_benefit_signal() == 0
+			assert SimulationExecutor(inputs, print_every=1e9).execute(iterations=10_000).mean_voi() == 0
 
 	def test_high(self):
 		"""
@@ -57,7 +57,7 @@ class TestInfiniteSample:
 	def test_each_iteration(self):
 		"""
 		If the sample size is essentially infinite, the signal we receive is infinitely precise.
-		So the posterior mean is equal to T_i at each iteration.
+		So the posterior mean is equal to T_i at each iteration_explicit_b.
 		"""
 		simulation_run = self.simulate(100)
 		T_is = np.asarray(simulation_run.get_column('T_i'))
@@ -66,7 +66,7 @@ class TestInfiniteSample:
 
 	def mean_helper(self, relative_tolerance, iterations):
 		"""
-		If the posterior mean is equal to T_i at each iteration,
+		If the posterior mean is equal to T_i at each iteration_explicit_b,
 		the mean of posterior means is equal to the prior mean.
 		"""
 		simulation_run = self.simulate(iterations)

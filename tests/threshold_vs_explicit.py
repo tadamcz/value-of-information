@@ -21,8 +21,8 @@ class TestThresholdvsExplicit:
 			explicit = SimulationExecutor(inputs, force_explicit_bayes=True, print_every=1e9).execute(iterations=iterations)
 			threshold = SimulationExecutor(inputs, force_explicit_bayes=False, print_every=1e9).execute(iterations=iterations)
 
-			assert explicit.mean_benefit_signal() == pytest.approx(
-				threshold.mean_benefit_signal(), rel=relative_tolerance)
+			assert explicit.mean_voi() == pytest.approx(
+				threshold.mean_voi(), rel=relative_tolerance)
 
 	@pytest.mark.parametrize('simulation_inputs',
 							 gen_norm_norm.linsp_distance_to_bar(2), ids=shared.simulation_input_idfn)

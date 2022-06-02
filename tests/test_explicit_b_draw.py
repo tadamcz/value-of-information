@@ -23,8 +23,8 @@ class TestBDraw:
 			b_draw_no = SimulationExecutor(inputs, force_explicit_b_draw=False, print_every=1e9).execute(
 				iterations=iterations // 10)
 
-			assert b_draw_yes.mean_benefit_signal() == pytest.approx(
-				b_draw_no.mean_benefit_signal(), rel=relative_tolerance)
+			assert b_draw_yes.mean_voi() == pytest.approx(
+				b_draw_no.mean_voi(), rel=relative_tolerance)
 
 			assert np.all(b_draw_no.get_column('b_i') == "NA")
 			assert np.all(b_draw_yes.get_column('b_i') != "NA")
