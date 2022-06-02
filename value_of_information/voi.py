@@ -68,5 +68,6 @@ def payoff(decision, T, bar):
 	elif decision == "d_2":
 		return T
 
+
 def value_of_information(decision_with_signal, decision_no_signal, T, bar):
 	return payoff(decision_with_signal, T, bar) - payoff(decision_no_signal, T, bar)

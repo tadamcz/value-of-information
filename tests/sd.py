@@ -8,7 +8,7 @@ import tests.param_generators.lognorm_norm as gen_log_norm_norm
 import tests.param_generators.norm_norm as gen_norm_norm
 from tests import shared
 from tests.shared import get_location_scale, is_decreasing, is_increasing
-from value_of_information.simulation import SimulationExecutor, SimulationInputs
+from value_of_information.simulation import SimulationExecutor
 
 
 class Test_sdB:

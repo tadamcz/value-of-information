@@ -1,8 +1,9 @@
 from __future__ import annotations  # This will become the default in Python 3.10.
 
+import os
 import statistics
 import warnings
-import os
+
 import numpy as np
 import pandas as pd
 import scipy.stats

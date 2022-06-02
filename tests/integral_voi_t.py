@@ -45,4 +45,4 @@ def test(simulation_inputs):
 
 	voi_simulation = SimulationExecutor(simulation_inputs).execute(iterations=500_000).mean_voi()
 
-	assert voi_simulation == pytest.approx(voi_integral, rel=5/100)
+	assert voi_simulation == pytest.approx(voi_integral, rel=5 / 100)
