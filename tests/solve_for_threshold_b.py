@@ -1,7 +1,7 @@
 import pytest
 from scipy import stats
 
-from value_of_information.simulation import SimulationInputs, SimulationExecutor
+from value_of_information import voi
 
 
 @pytest.fixture(params=[-1, 0, 2.345], ids=lambda p: f"mu={p}")
@@ -28,11 +28,9 @@ def test_solve_for_threshold_b(prior_mu, prior_sigma, sd_B, bar):
 	"""
 	Closed-form expression for the threshold value `b_*`. See README.
 	"""
-	inputs = SimulationInputs(
-		prior=stats.norm(loc=prior_mu, scale=prior_sigma),
-		sd_B=sd_B,
-		bar=bar)
 
 	closed_form = (sd_B ** 2 * (bar - prior_mu)) / prior_sigma ** 2 + bar
 
-	assert SimulationExecutor(inputs).solve_for_threshold_b() == pytest.approx(closed_form, rel=1/100_000)
+	prior = stats.norm(loc=prior_mu, scale=prior_sigma)
+
+	assert voi.threshold_b(prior, sd_B, bar) == pytest.approx(closed_form, rel=1 / 100_000)

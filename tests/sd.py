@@ -44,7 +44,7 @@ class Test_sdB:
 	@pytest.mark.parametrize('central_simulation_inputs', gen_norm_norm.linsp(6) + gen_norm_norm.from_seed(3),
 							 ids=shared.simulation_input_idfn)
 	def test_extra_slow_normal_prior(self, central_simulation_inputs):
-		with patch('value_of_information.simulation.SimulationExecutor.posterior') as patched_posterior:
+		with patch('value_of_information.bayes.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
 			self.helper(central_simulation_inputs, iterations=150_000, num_sds=3)
 
@@ -55,7 +55,7 @@ class Test_sd_prior_T:
 	"""
 
 	def helper(self, central_simulation_inputs, iterations, num_sds):
-		with patch('value_of_information.simulation.SimulationExecutor.posterior') as patched_posterior:
+		with patch('value_of_information.bayes.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
 			central_mean, central_sd = get_location_scale(central_simulation_inputs.prior_T)
 			list_sd_Ts = np.linspace(central_sd * 0.75, central_sd * 1.25, num=num_sds)

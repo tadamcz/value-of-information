@@ -14,7 +14,7 @@ class TestInfiniteBar:
 		study_sample_size = 100
 		population_std_dev = 20
 
-		with patch('value_of_information.simulation.SimulationExecutor.posterior') as patched_posterior:
+		with patch('value_of_information.bayes.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
 			inputs = SimulationInputs(
 				prior=prior,
@@ -46,7 +46,7 @@ class TestInfiniteSample:
 		prior = stats.norm(self.prior_mean, self.prior_sd)
 		bar = 0  # Has no effect
 
-		with patch('value_of_information.simulation.SimulationExecutor.posterior') as patched_posterior:
+		with patch('value_of_information.bayes.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
 			inputs = SimulationInputs(
 				prior=prior,

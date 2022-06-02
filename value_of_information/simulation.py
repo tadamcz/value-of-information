@@ -6,13 +6,11 @@ import warnings
 import numpy as np
 import pandas as pd
 import scipy.stats
-from bayes_continuous.likelihood_func import NormalLikelihood, LikelihoodFunction
-from bayes_continuous.posterior import Posterior
-from scipy import stats, optimize
+from bayes_continuous.likelihood_func import NormalLikelihood
+from scipy import stats
 from scipy.stats._distn_infrastructure import rv_frozen
-from sortedcontainers import SortedDict
 
-import value_of_information.constants as constants
+from value_of_information import constants, voi, bayes
 from value_of_information import utils
 from value_of_information.rounding import round_sig
 
@@ -60,7 +58,8 @@ class SimulationInputs:
 
 
 class SimulationExecutor:
-	def __init__(self, input: SimulationInputs, force_explicit_bayes=False, force_explicit_b_draw=True, print_every=None):
+	def __init__(self, input: SimulationInputs, force_explicit_bayes=False, force_explicit_b_draw=True,
+				 print_every=None):
 		self.input = input
 		self.do_explicit_bayes = force_explicit_bayes or (not self.input.likelihood_is_normal)
 		self.do_explicit_b_draw = force_explicit_b_draw or self.input.continuous_choice
@@ -104,7 +103,7 @@ class SimulationExecutor:
 
 		if not self.do_explicit_bayes:
 			print_intermediate_every = self.print_every or 1000
-			threshold_b = self.solve_for_threshold_b()
+			threshold_b = voi.threshold_b(self.input.prior_T, self.input.sd_B, self.input.bar)
 		else:
 			print_intermediate_every = self.print_every or 10
 			threshold_b = None
@@ -189,7 +188,7 @@ class SimulationExecutor:
 
 		if not self.do_explicit_bayes:
 			pr_choose_bar = stats.norm.cdf(threshold_b, loc=T_i, scale=self.input.sd_B)
-			pr_choose_object = 1-pr_choose_bar
+			pr_choose_object = 1 - pr_choose_bar
 
 		else:
 			# There should generally not be a reason to reach this path, but it could be included
@@ -204,7 +203,7 @@ class SimulationExecutor:
 			decision_w_out_signal = "d_1"
 			value_w_out_signal = self.input.bar
 
-		exp_value_w_signal = (pr_choose_bar*self.input.bar)+(pr_choose_object*T_i)
+		exp_value_w_signal = (pr_choose_bar * self.input.bar) + (pr_choose_object * T_i)
 		benefit_signal = exp_value_w_signal - value_w_out_signal
 
 		iteration_output = {
@@ -227,8 +226,7 @@ class SimulationExecutor:
 
 	def iteration_explicit_update(self, b_i, T_i, sd_B_i):
 		likelihood = NormalLikelihood(b_i, sd_B_i)
-
-		posterior = self.posterior(self.input.prior_T, likelihood)
+		posterior = bayes.posterior(self.input.prior_T, likelihood)
 
 		return self.iteration_create_dict(posterior_explicit=posterior, T_i=T_i, b_i=b_i)
 
@@ -296,66 +294,6 @@ class SimulationExecutor:
 		}
 
 		return iteration_output
-
-	def solve_for_threshold_b(self):
-		"""
-		We want to solve the following for b:
-		```
-		posterior_ev(b, ...) = bar
-		```
-
-		posterior_ev(b, ...) is increasing in b, so it has only one zero, and we can use
-		Brent (1973)'s method as implemented in `scipy.optimize.brentq`.
-
-		posterior_ev(b, ...) being increasing in b also has the consequence that we can
-		set the bracketing interval for Brent's method dynamically.
-		"""
-
-		posterior_ev_sorted = SortedDict()  # Sorted by key
-
-		def f_to_solve(b):
-			likelihood = NormalLikelihood(b, self.input.sd_B)
-			posterior = self.posterior(self.input.prior_T, likelihood)
-			posterior_ev = posterior.expect()
-			print(f"Trying b≈{round_sig(b, 5)}, which gives E[T|b]≈{round_sig(posterior_ev, 5)}")
-			posterior_ev_sorted[b] = posterior_ev
-			values_by_key = list(posterior_ev_sorted.values())
-			if not utils.is_increasing(values_by_key, rtol=1e-9):
-				raise RuntimeError(
-					f"Found non-increasing sequence of E[T|b]: {values_by_key}. An integral was likely computed incorrectly.")
-			return posterior_ev - self.input.bar
-
-		p_0_1_T = self.input.prior_T.ppf(0.1)
-		p_0_9_T = self.input.prior_T.ppf(0.9)
-
-		left = p_0_1_T
-		right = p_0_9_T
-
-		# Setting the bracketing interval dynamically.
-		FACTOR = 2
-
-		additive_step = 1
-		while f_to_solve(left) > 0.:
-			additive_step = additive_step * FACTOR
-			left = left - additive_step
-
-		additive_step = 1
-		while f_to_solve(right) < 0.:
-			additive_step = additive_step * FACTOR
-			right = right + additive_step
-		# f_to_solve(left) and f_to_solve(right) now have opposite signs
-
-		print(f"Running equation solver between b={round_sig(left, 5)} and b={round_sig(right, 5)}   ---->")
-		x0, root_results = optimize.brentq(f_to_solve, a=left, b=right, full_output=True)
-		print(f"Equation solver results for threshold value of b:\n{root_results}\n")
-
-		return x0
-
-	def posterior(self, prior: rv_frozen, likelihood: LikelihoodFunction):
-		posterior = Posterior(prior, likelihood)
-		if np.isnan(posterior.expect()):
-			raise ValueError(f"Posterior expected value is NaN for {prior}, {likelihood}")
-		return posterior
 
 	def print_explainer(self):
 		utils.print_wrapped("We call T the parameter over which we want to conduct inference, "
@@ -435,7 +373,6 @@ class SimulationRun:
 			information.update({
 				"Fraction of iterations where E[T|b_i] > bar": self.get_column("E[T|b_i]>bar").sum() / iterations,
 			})
-
 
 		quantiles = [0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, .9, 0.95, .99, .999]
 		for q in quantiles:

@@ -6,6 +6,7 @@ import tests.param_generators.lognorm_norm as gen_lognorm_norm
 import tests.param_generators.norm_norm as gen_norm_norm
 from tests import shared
 from value_of_information.simulation import SimulationExecutor
+from value_of_information.voi import threshold_b
 
 
 def voi(t, b_threshold, sd_B, bar, prior_ev):
@@ -29,8 +30,7 @@ def test(simulation_inputs):
 
 	Integration has some advantages over simulation, and could be incorporated into the main program at a later stage.
 	"""
-	executor = SimulationExecutor(simulation_inputs)
-	b_threshold = executor.solve_for_threshold_b()
+	b_threshold = threshold_b(simulation_inputs.prior_T, simulation_inputs.sd_B, simulation_inputs.bar)
 
 	voi_explicit = lambda t: voi(t,
 								 b_threshold=b_threshold,
