@@ -260,18 +260,18 @@ class SimulationExecutor:
 
 		# Without signal
 		if self.input.prior_ev > self.input.bar:
-			decision_w_out_signal = "candidate"
+			decision_w_out_signal = "d_2"
 			value_w_out_signal = T_i
 		else:
-			decision_w_out_signal = "fallback"
+			decision_w_out_signal = "d_1"
 			value_w_out_signal = self.input.bar
 
 		# With signal
 		if posterior_ev_beats_bar:
-			decision_w_signal = "candidate"
+			decision_w_signal = "d_2"
 			value_w_signal = T_i
 		else:
-			decision_w_signal = "fallback"
+			decision_w_signal = "d_1"
 			value_w_signal = self.input.bar
 
 		benefit_signal = value_w_signal - value_w_out_signal
@@ -404,7 +404,7 @@ class SimulationRun:
 			f"\nFor each iteration i of the simulation, we draw a true value T_i from the prior, and we draw "
 			"an estimate b_i from Normal(T_i,sd(B)). The decision-maker cannot observe T_i, their subjective "
 			"posterior expected value is E[T|b_i]. E[T|b_i] and P(T|b_i > bar) are only computed if "
-			"running an 'explicit' simulation. 'fallback' is the option whose expected value is `bar`, and 'candidate' "
+			"running an 'explicit' simulation. 'd_1' is the bar, and 'd_2' "
 			"is the object of study.\n")
 		# Once the display.max_rows is exceeded, the display.min_rows options determines how many rows are shown in
 		# the truncated repr.
