@@ -30,11 +30,7 @@ class TestBDraw:
 			assert np.all(b_draw_yes.get_column('b_i') != "NA")
 
 	@pytest.mark.parametrize('simulation_inputs',
-
-							 argvalues=gen_norm_norm.linsp(12) +
-									   gen_norm_norm.from_seed(5) +
-									   gen_lognorm_norm.linsp(8),
-
+							 argvalues=gen_lognorm_norm.linsp(8) + gen_norm_norm.linsp(12),
 							 ids=shared.simulation_input_idfn)
 	def test(self, simulation_inputs):
-		self.helper(inputs=simulation_inputs, iterations=2_000_000, relative_tolerance=2 / 100)
+		self.helper(inputs=simulation_inputs, iterations=5_000_000, relative_tolerance=2 / 100)
