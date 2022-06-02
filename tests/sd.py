@@ -29,14 +29,14 @@ class Test_sdB:
 
 	@pytest.mark.parametrize('central_simulation_inputs', gen_log_norm_norm.linsp(4), ids=shared.simulation_input_idfn)
 	def test_lognorm(self, central_simulation_inputs):
-		self.helper(central_simulation_inputs, iterations=150_000, num_sds=3)
+		self.helper(central_simulation_inputs, iterations=500_000, num_sds=3)
 
 	@pytest.mark.parametrize('central_simulation_inputs', gen_norm_norm.linsp(6) + gen_norm_norm.from_seed(3),
 							 ids=shared.simulation_input_idfn)
 	def test_norm(self, central_simulation_inputs):
 		with patch('value_of_information.bayes.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
-			self.helper(central_simulation_inputs, iterations=150_000, num_sds=3)
+			self.helper(central_simulation_inputs, iterations=500_000, num_sds=3)
 
 
 class Test_sd_prior_T:

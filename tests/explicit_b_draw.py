@@ -8,6 +8,9 @@ from value_of_information.simulation import SimulationExecutor
 
 
 def helper(inputs, iterations, relative_tolerance):
+	"""
+	Compare mean VOI with or without explicit b_i draws.
+	"""
 	b_draw_yes = SimulationExecutor(inputs, force_explicit_b_draw=True).execute(
 		iterations=iterations)
 	b_draw_no = SimulationExecutor(inputs, force_explicit_b_draw=False).execute(
@@ -23,7 +26,7 @@ def helper(inputs, iterations, relative_tolerance):
 						 argvalues=gen_lognorm_norm.linsp(4),
 						 ids=shared.simulation_input_idfn)
 def test_lognorm(simulation_inputs):
-	helper(inputs=simulation_inputs, iterations=1_000_000, relative_tolerance=5 / 100)
+	helper(inputs=simulation_inputs, iterations=1_000_000, relative_tolerance=10 / 100)
 
 
 @pytest.mark.parametrize('simulation_inputs',
