@@ -37,7 +37,7 @@ def normal_normal_closed_form(normal_prior, normal_likelihood):
 
 def simulation_input_idfn(inputs: SimulationInputs):
 	pri_loc, pri_scale = get_location_scale(inputs.prior_T)
-	return f"fam={inputs.prior_family()}, bar={round_sig(inputs.bar)}, E[T]~={round_sig(inputs.prior_ev)}, T_loc={round_sig(pri_loc)}, T_scale={round_sig(pri_scale)}, sd(B)~={round_sig(inputs.sd_B)}"
+	return f"fam={inputs.prior_family()}, bar={round_sig(inputs.bar)}, E[T]~={round_sig(inputs.prior_T_ev)}, T_loc={round_sig(pri_loc)}, T_scale={round_sig(pri_scale)}, sd(B)~={round_sig(inputs.sd_B)}"
 
 
 def rel_idfn(p):
@@ -56,3 +56,18 @@ def is_decreasing(array):
 def is_increasing(array):
 	diff = np.diff(array)
 	return np.all(diff >= 0)
+
+
+def expected_voi_t(t, b_threshold, sd_B, bar, prior_ev):
+	"""
+	Direct simplified expression. Currently, it's only used in tests, because for the simulation
+	we want to be able to store and display the building blocks of this expression.
+
+	VOI(t) = E_B[VOI(T,B) | T=t] = F(b_*) * (bar-t) + t - U(decision_0, t)
+	"""
+	if prior_ev > bar:
+		payoff_no_signal = t
+	else:
+		payoff_no_signal = bar
+
+	return stats.norm.cdf(b_threshold, loc=t, scale=sd_B) * (bar - t) + t - payoff_no_signal

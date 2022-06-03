@@ -1,8 +1,8 @@
 from bayes_continuous.likelihood_func import NormalLikelihood
-from scipy import optimize, stats
+from scipy import optimize
 from sortedcontainers import SortedDict
 
-from value_of_information import utils, bayes
+from value_of_information import utils, bayes, decision_explicit_b, decision_distribution
 from value_of_information.rounding import round_sig
 
 
@@ -69,20 +69,56 @@ def payoff(decision, T, bar):
 		return T
 
 
-def value_of_information(decision_with_signal, decision_no_signal, T, bar):
-	return payoff(decision_with_signal, T, bar) - payoff(decision_no_signal, T, bar)
-
-
-def expected_voi(t, b_threshold, sd_B, bar, prior_ev):
+def value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b=None, threshold_b=None, explicit_bayes=False):
 	"""
-	Direct simplified expression. Currently, it's only used in tests, because for the simulation
-	we want to be able to store and display the building blocks of this expression.
-
-	VOI(t) = E_B[VOI(T,B) | T=t] = F(b_*) * (bar-t) + t - U(decision_0, t)
+	prior_T_ev is passed in explicitly to avoid re-computing it each time
 	"""
-	if prior_ev > bar:
-		payoff_no_signal = t
+	explicit_b_draw = b is not None
+
+	no_signal = decision_explicit_b.no_signal(prior_T_ev, bar)
+	no_signal["payoff"] = payoff(no_signal["decision"], T, bar)
+
+	if explicit_b_draw:
+		with_signal = decision_explicit_b.with_signal(b, prior_T, sd_B, bar, explicit_bayes=explicit_bayes,
+													  threshold=threshold_b)
+		with_signal["payoff"] = payoff(with_signal["decision"], T, bar)
 	else:
-		payoff_no_signal = bar
+		with_signal = decision_distribution.with_signal(prior_T, T, sd_B, bar, threshold=threshold_b)
 
-	return stats.norm.cdf(b_threshold, loc=t, scale=sd_B) * (bar - t) + t - payoff_no_signal
+		payoff_d_1 = payoff("d_1", T, bar)
+		payoff_d_2 = payoff("d_2", T, bar)
+
+		with_signal["expected_payoff"] = payoff_d_1 * with_signal["pr_d_1"] + payoff_d_2 * with_signal["pr_d_2"]
+
+	dictionary = {
+		'T': T,
+		'b': b,
+		'w_out_signal': no_signal["decision"],
+		'payoff_w_out_signal': no_signal["payoff"],
+	}
+
+	if explicit_bayes:
+		dictionary.update({
+			'E[T|b]': with_signal["posterior_ev"],
+			'P(T>bar|b)': with_signal["pr_beat_bar"],
+			'E[T|b]>bar': with_signal["posterior_ev"] > bar,
+		})
+
+	if explicit_b_draw:
+		dictionary.update({
+			'w_signal': with_signal["decision"],
+			'payoff_w_signal': with_signal["payoff"],
+			'E[T|b]>bar': with_signal["decision"] == "d_2",
+			'VOI': with_signal["payoff"] - no_signal["payoff"],
+		})
+	else:
+		dictionary.update({
+			'P(d_1|T)': with_signal["pr_d_1"],
+			'P(d_2|T)': with_signal["pr_d_2"],
+			'E_B[payoff_w_signal]': with_signal["expected_payoff"],
+			'E_B[VOI]': with_signal["expected_payoff"] - no_signal["payoff"],
+		})
+
+	return dictionary
+
+

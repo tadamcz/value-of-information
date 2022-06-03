@@ -8,11 +8,12 @@ import tests.param_generators.lognorm_norm as gen_lognorm_norm
 import tests.param_generators.norm_norm as gen_norm_norm
 from tests import shared
 from value_of_information.simulation import SimulationExecutor
-from value_of_information.voi import threshold_b, expected_voi
+from value_of_information.voi import threshold_b
+from tests.shared import expected_voi_t
 
 
 @pytest.mark.parametrize('simulation_inputs',
-						 argvalues=gen_lognorm_norm.linsp(8) + gen_norm_norm.linsp(12),
+						 argvalues=gen_lognorm_norm.linsp(4) + gen_norm_norm.linsp(6),
 						 ids=shared.simulation_input_idfn)
 def test_integral(simulation_inputs):
 	"""
@@ -20,18 +21,18 @@ def test_integral(simulation_inputs):
 	"""
 	b_threshold = threshold_b(simulation_inputs.prior_T, simulation_inputs.sd_B, simulation_inputs.bar)
 
-	voi = lambda t: expected_voi(t,
-								 b_threshold=b_threshold,
-								 sd_B=simulation_inputs.sd_B,
-								 bar=simulation_inputs.bar,
-								 prior_ev=simulation_inputs.prior_ev)
+	voi = lambda t: expected_voi_t(t,
+								   b_threshold=b_threshold,
+								   sd_B=simulation_inputs.sd_B,
+								   bar=simulation_inputs.bar,
+								   prior_ev=simulation_inputs.prior_T_ev)
 
 	f_to_integrate = lambda t: simulation_inputs.prior_T.pdf(t) * voi(t)
 	left, right = simulation_inputs.prior_T.support()
 
 	voi_integral = integrate.quad(f_to_integrate, a=left, b=right)[0]
 
-	voi_simulation = SimulationExecutor(simulation_inputs).execute(iterations=500_000).mean_voi()
+	voi_simulation = SimulationExecutor(simulation_inputs).execute(iterations=2_000_000).mean_voi()
 
 	assert voi_simulation == pytest.approx(voi_integral, rel=5 / 100)
 
@@ -53,12 +54,12 @@ def test_every_iteration(simulation_inputs):
 	for row in simulation_run.iterations_data:
 		voi_simulated = row['E_B[VOI]']
 
-		voi_from_expression = expected_voi(
+		voi_from_expression = expected_voi_t(
 			t=row['T_i'],
 			b_threshold=b_threshold,
 			sd_B=simulation_inputs.sd_B,
 			bar=simulation_inputs.bar,
-			prior_ev=simulation_inputs.prior_ev,
+			prior_ev=simulation_inputs.prior_T_ev,
 		)
 
 		assert voi_simulated == pytest.approx(voi_from_expression)

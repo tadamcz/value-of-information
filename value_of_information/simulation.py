@@ -10,7 +10,7 @@ import scipy.stats
 from scipy import stats
 from scipy.stats._distn_infrastructure import rv_frozen
 
-from value_of_information import constants, voi, decision_explicit_b, decision_distribution, decision
+from value_of_information import constants, voi
 from value_of_information import utils
 from value_of_information.rounding import round_sig
 
@@ -22,7 +22,7 @@ class SimulationInputs:
 		and B the random variable we observe. Realisations of B can be denoted b.
 		"""
 		self.prior_T = prior
-		self.prior_ev = self.prior_T.expect()
+		self.prior_T_ev = self.prior_T.expect()
 		if study_sample_size is None and population_std_dev is None:
 			if sd_B is None:
 				raise ValueError
@@ -50,7 +50,7 @@ class SimulationInputs:
 		information = {
 			"Prior family": self.prior_family(),
 			"Bar": self.bar,
-			"E[T]": round_sig(self.prior_ev, constants.ROUND_SIG_FIG),
+			"E[T]": round_sig(self.prior_T_ev, constants.ROUND_SIG_FIG),
 			"sd(B)": round_sig(self.sd_B, constants.ROUND_SIG_FIG),
 			"Study sample size": self.study_sample_size,
 		}
@@ -118,17 +118,13 @@ class SimulationExecutor:
 		i = 0
 		while i < max_iterations:
 			T_i = T_is[i]
-
-			# Our signal has the point estimator B_i for the parameter T_i.
-			# sd(B_i) is a constant
-			sd_B_i = self.input.sd_B
-
 			if self.do_explicit_b_draw:
-				iteration_output = self.iteration_explicit_b_draw(T_i, i, b_i_distances, sd_B_i, threshold_b)
+				iteration = self.iteration_explicit_b_draw(T_i, i, b_i_distances, threshold_b)
 			else:
-				iteration_output = self.iteration_decision_distribution(T_i, threshold_b)
+				iteration = self.iteration_decision_distribution(T_i, threshold_b)
 
-			this_run.append(iteration_output)
+			iteration = self.add_indices_to_dict_keys(iteration)
+			this_run.append(iteration)
 
 			# Repeatedly calling `.sem()` is expensive
 			if iterations is None and len(this_run) % 10 == 0:
@@ -152,33 +148,20 @@ class SimulationExecutor:
 
 		return this_run
 
-	def iteration_explicit_b_draw(self, T_i, i, b_i_distances, sd_B_i, threshold_b):
+	def iteration_explicit_b_draw(self, T_i, i, b_i_distances, threshold_b):
 		"""
-		We draw an estimate b_i from Normal(T_i,sd(B_i))
+		We draw an estimate b_i from Normal(T_i,sd(B))
 		"""
 
 		# For efficiency, this is done outside the T_i-loop.
-		# The lines below are equivalent to
+		# The lines below are equivalent to:
 		# `b_i = stats.norm(T_i, sd_B_i).rvs(size=1)`
 		b_i_distance = b_i_distances[i]
 		b_i = T_i + b_i_distance
 
-		no_signal = decision_explicit_b.no_signal(self.input.prior_ev, self.input.bar)
-
-		if self.do_explicit_bayes:
-			with_signal = decision_explicit_b.with_signal(b_i, self.input.prior_T, self.input.sd_B, self.input.bar,
-														  explicit_bayes=True)
-		else:
-			with_signal = decision_explicit_b.with_signal(b_i, self.input.prior_T, self.input.sd_B, self.input.bar,
-														  threshold=threshold_b)
-			for key in ["pr_beat_bar", "posterior_ev"]:
-				no_signal[key] = None
-				with_signal[key] = None
-
-		no_signal["payoff"] = voi.payoff(no_signal["decision"], T_i, self.input.bar)
-		with_signal["payoff"] = voi.payoff(with_signal["decision"], T_i, self.input.bar)
-
-		return self.iteration_to_dict(no_signal, with_signal, T_i, b_i)
+		return voi.value_of_information(T_i, self.input.sd_B, self.input.bar, self.input.prior_T, self.input.prior_T_ev,
+										b=b_i,
+										threshold_b=threshold_b, explicit_bayes=self.do_explicit_bayes)
 
 	def iteration_decision_distribution(self, T_i, threshold_b):
 		"""
@@ -187,57 +170,33 @@ class SimulationExecutor:
 
 		This is an an alternative to explicitly drawing `b_i`s.
 		"""
-		distribution_w_signal = decision_distribution.with_signal(self.input.prior_T, T_i, self.input.sd_B,
-																  self.input.bar, threshold_b,
-																  explicit_bayes=self.do_explicit_bayes)
+		return voi.value_of_information(T_i, self.input.sd_B, self.input.bar, self.input.prior_T, self.input.prior_T_ev,
+										threshold_b=threshold_b)
 
-		decision_no_signal = decision.no_signal(self.input.prior_ev, self.input.bar)
-
-		no_signal = decision_no_signal
-		no_signal["payoff"] = voi.payoff(no_signal["decision"], T_i, self.input.bar)
-
-		with_signal = distribution_w_signal
-		payoff_d_1 = voi.payoff("d_1", T_i, self.input.bar)
-		payoff_d_2 = voi.payoff("d_2", T_i, self.input.bar)
-		with_signal["expected_payoff"] = payoff_d_1 * with_signal["pr_d_1"] + payoff_d_2 * with_signal["pr_d_2"]
-
-		return self.iteration_to_dict(no_signal, with_signal, T_i, b_i=None)
-
-	def iteration_to_dict(self, no_signal: dict, with_signal: dict, T_i, b_i):
+	def add_indices_to_dict_keys(self, iteration_dictionary):
 		"""
-		The final dictionary that will be used to store information about this iteration. At the end of the simulation,
-		these dictionaries will become rows in a Pandas DataFrame.
+		For display purposes
 		"""
-		ret = {
-			'T_i': T_i,
-			'b_i': b_i,
-			'w_out_signal': no_signal["decision"],
-			'payoff_w_out_signal': no_signal["payoff"],
+
+		mapping = {
+			'T': 'T_i',
+			'b': 'b_i',
+			'E[T|b]': 'E[T|b_i]',
+			'P(T>bar|b)': 'P(T>bar|b_i)',
+			'E[T|b]>bar': 'E[T|b_i]>bar',
+			'P(d_1|T)': 'P(d_1|T_i)',
+			'P(d_2|T)': 'P(d_2|T_i)'
 		}
+		new_dictionary = {}
+		for key in iteration_dictionary:  # iterate through them all because we want to keep the order of keys
+			old_key = key
+			try:
+				new_key = mapping[old_key]
+			except KeyError:
+				new_key = old_key
+			new_dictionary[new_key] = iteration_dictionary[old_key]
 
-		if self.do_explicit_bayes:
-			ret.update({
-				'E[T|b_i]': with_signal["posterior_ev"],
-				'P(T>bar|b_i)': with_signal["pr_beat_bar"],
-				'E[T|b_i]>bar': with_signal["posterior_ev"] > self.input.bar,
-			})
-
-		if self.do_explicit_b_draw:
-			ret.update({
-				'w_signal': with_signal["decision"],
-				'E[T|b_i]>bar': with_signal["decision"] == "d_2",
-				'payoff_w_signal': with_signal["payoff"],
-				'VOI': with_signal["payoff"] - no_signal["payoff"],
-			})
-		else:
-			ret.update({
-				'P(d_1|T_i)': with_signal["pr_d_1"],
-				'P(d_2|T_i)': with_signal["pr_d_2"],
-				'E_B[payoff_w_signal]': with_signal["expected_payoff"],
-				'E_B[VOI]': with_signal["expected_payoff"] - no_signal["payoff"],
-			})
-
-		return ret
+		return new_dictionary
 
 	def print_explainer(self):
 		utils.print_wrapped("We call T the parameter over which we want to conduct inference, "

@@ -48,4 +48,4 @@ def test():
 	theoretical_cdf = stats.norm(big_mean, claimed_standard_err).cdf
 
 	ks_statistic = kstest(means, theoretical_cdf).statistic
-	assert ks_statistic < 3 / 100
+	assert ks_statistic < 4 / 100
