@@ -104,7 +104,7 @@ class SimulationExecutor:
 
 		if not self.do_explicit_bayes:
 			print_intermediate_every = self.print_every or 1000
-			threshold_b = voi.threshold_b(self.input.prior_T, self.input.sd_B, self.input.bar)
+			threshold_b = voi.solve_threshold_b(self.input.prior_T, self.input.sd_B, self.input.bar)
 		else:
 			print_intermediate_every = self.print_every or 10
 			threshold_b = None

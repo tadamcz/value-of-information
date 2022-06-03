@@ -33,4 +33,4 @@ def test_solve_for_threshold_b(prior_mu, prior_sigma, sd_B, bar):
 
 	prior = stats.norm(loc=prior_mu, scale=prior_sigma)
 
-	assert voi.threshold_b(prior, sd_B, bar) == pytest.approx(closed_form, rel=1 / 100_000)
+	assert voi.solve_threshold_b(prior, sd_B, bar) == pytest.approx(closed_form, rel=1 / 100_000)

@@ -6,7 +6,7 @@ from value_of_information import utils, bayes, decision_explicit_b, decision_dis
 from value_of_information.rounding import round_sig
 
 
-def threshold_b(prior_T, sd_B, bar):
+def solve_threshold_b(prior_T, sd_B, bar):
 	"""
 
 	We want to solve the following for b:

@@ -6,36 +6,37 @@ from scipy import stats
 
 import tests.shared as shared
 from value_of_information.simulation import SimulationInputs, SimulationExecutor
+from value_of_information.voi import value_of_information, solve_threshold_b
 
 
 class TestInfiniteBar:
-	def simulate(self, bar):
-		prior = stats.norm(1, 1)
-		study_sample_size = 100
-		population_std_dev = 20
+	def helper(self, bar):
+		prior_T = stats.norm(1, 1)
+		prior_T_ev = prior_T.mean()
+		sd_B = 10
 
 		with patch('value_of_information.bayes.posterior') as patched_posterior:
 			patched_posterior.side_effect = shared.normal_normal_closed_form
-			inputs = SimulationInputs(
-				prior=prior,
-				study_sample_size=study_sample_size,
-				population_std_dev=population_std_dev,
-				bar=bar)
-			assert SimulationExecutor(inputs).execute(iterations=10_000).mean_voi() == 0
+			threshold_b = solve_threshold_b(prior_T, sd_B, bar)
+
+		for T in np.linspace(prior_T.ppf(0.01), prior_T.ppf(0.99), num=5):
+			for b in np.linspace(-5 * sd_B, 5 * sd_B, num=5):
+				voi = value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b, threshold_b=threshold_b)
+				assert voi["VOI"] == 0
 
 	def test_high(self):
 		"""
 		If both prior expected value and all values of posterior are less than the bar,
 		the signal value is 0.
 		"""
-		self.simulate(bar=1e9)
+		self.helper(bar=1e9)
 
 	def test_low(self):
 		"""
 		If both prior expected value and all values of posterior are greater than the bar,
 		the signal value is 0.
 		"""
-		self.simulate(bar=-1e9)
+		self.helper(bar=-1e9)
 
 
 class TestInfiniteSample:

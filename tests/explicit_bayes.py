@@ -1,30 +1,26 @@
-from unittest.mock import patch
-
+import numpy as np
 import pytest
 
 import tests.param_generators.norm_norm as gen_norm_norm
 import tests.shared as shared
-from value_of_information.simulation import SimulationExecutor
+from value_of_information.voi import solve_threshold_b
+from value_of_information.voi import value_of_information
 
 
-class TestThresholdvsExplicit:
-	"""
-	todo Additional ideas:
-	1.
-	using mocking, pass in the same explicit arrays of T_is and b_is to both methods,
-	then check that the value of the signal is the same in each row.
-	"""
+@pytest.mark.parametrize('simulation_inputs',
+						 gen_norm_norm.linsp_distance_to_bar(2), ids=shared.simulation_input_idfn)
+def test(simulation_inputs):
+	sd_B = simulation_inputs.sd_B
+	bar = simulation_inputs.bar
+	prior_T = simulation_inputs.prior_T
+	prior_T_ev = simulation_inputs.prior_T_ev
 
-	def helper(self, inputs, iterations, relative_tolerance):
-		with patch('value_of_information.bayes.posterior') as patched_posterior:
-			patched_posterior.side_effect = shared.normal_normal_closed_form
-			explicit = SimulationExecutor(inputs, force_explicit_bayes=True).execute(iterations=iterations)
-			threshold = SimulationExecutor(inputs, force_explicit_bayes=False).execute(iterations=iterations)
+	threshold_b = solve_threshold_b(prior_T, sd_B, bar)
 
-			assert explicit.mean_voi() == pytest.approx(
-				threshold.mean_voi(), rel=relative_tolerance)
+	for T in np.linspace(prior_T.ppf(0.01), prior_T.ppf(0.99), num=5):
+		for b in np.linspace(-5 * sd_B, 5 * sd_B, num=5):
+			threshold = value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b, threshold_b=threshold_b)
+			explicit = value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b, explicit_bayes=True)
 
-	@pytest.mark.parametrize('simulation_inputs',
-							 gen_norm_norm.linsp_distance_to_bar(2), ids=shared.simulation_input_idfn)
-	def test(self, simulation_inputs):
-		self.helper(inputs=simulation_inputs, iterations=15_000, relative_tolerance=15 / 100)
+			for key in ['w_out_signal', 'payoff_w_out_signal', 'w_signal', 'payoff_w_signal', 'VOI']:
+				assert threshold[key] == explicit[key]

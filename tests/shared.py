@@ -58,7 +58,7 @@ def is_increasing(array):
 	return np.all(diff >= 0)
 
 
-def expected_voi_t(t, b_threshold, sd_B, bar, prior_ev):
+def expected_voi_t(t, threshold_b, sd_B, bar, prior_ev):
 	"""
 	Direct simplified expression. Currently, it's only used in tests, because for the simulation
 	we want to be able to store and display the building blocks of this expression.
@@ -70,4 +70,4 @@ def expected_voi_t(t, b_threshold, sd_B, bar, prior_ev):
 	else:
 		payoff_no_signal = bar
 
-	return stats.norm.cdf(b_threshold, loc=t, scale=sd_B) * (bar - t) + t - payoff_no_signal
+	return stats.norm.cdf(threshold_b, loc=t, scale=sd_B) * (bar - t) + t - payoff_no_signal
