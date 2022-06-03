@@ -217,8 +217,7 @@ class SimulationExecutor:
 		if self.do_explicit_bayes:
 			ret.update({
 				'E[T|b_i]': with_signal["posterior_ev"],
-				# Todo fix this wrong notation: P(T|b_i>bar)
-				'P(T|b_i>bar)': with_signal["posterior_ev"],
+				'P(T>bar|b_i)': with_signal["pr_beat_bar"],
 				'E[T|b_i]>bar': with_signal["posterior_ev"] > self.input.bar,
 			})
 
