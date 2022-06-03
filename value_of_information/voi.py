@@ -1,5 +1,5 @@
 from bayes_continuous.likelihood_func import NormalLikelihood
-from scipy import optimize
+from scipy import optimize, stats
 from sortedcontainers import SortedDict
 
 from value_of_information import utils, bayes
@@ -71,3 +71,18 @@ def payoff(decision, T, bar):
 
 def value_of_information(decision_with_signal, decision_no_signal, T, bar):
 	return payoff(decision_with_signal, T, bar) - payoff(decision_no_signal, T, bar)
+
+
+def expected_voi(t, b_threshold, sd_B, bar, prior_ev):
+	"""
+	Direct simplified expression. Currently, it's only used in tests, because for the simulation
+	we want to be able to store and display the building blocks of this expression.
+
+	VOI(t) = E_B[VOI(T,B) | T=t] = F(b_*) * (bar-t) + t - U(decision_0, t)
+	"""
+	if prior_ev > bar:
+		payoff_no_signal = t
+	else:
+		payoff_no_signal = bar
+
+	return stats.norm.cdf(b_threshold, loc=t, scale=sd_B) * (bar - t) + t - payoff_no_signal
