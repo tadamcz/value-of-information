@@ -76,6 +76,7 @@ class SimulationExecutor:
 		self.print_explainer()
 		print("\n" + self.input.__repr__())
 		print(f"\nExplicit Bayesian update: {self.do_explicit_bayes}")
+		print(f"Explicit b_i draws: {self.do_explicit_b_draw}\n")
 		if max_iterations is None:
 			if self.do_explicit_bayes:
 				max_iterations = 1000
@@ -90,13 +91,13 @@ class SimulationExecutor:
 
 		this_run = SimulationRun(self.input, self)
 
-		# For each iteration_explicit_b i of the simulation, we draw a true value T_i from the prior.
+		# For each iteartion i of the simulation, we draw a true value T_i from the prior.
 		# For efficiency, it's better to do this outside the loop
 		# See: https://github.com/scipy/scipy/issues/9394
 		T_is = self.input.prior_T.rvs(size=max_iterations)
 
 		if self.do_explicit_b_draw:
-			# For each iteration_explicit_b i of the simulation, we draw a
+			# For each iteration i of the simulation, we draw a
 			# distance (b_i-T_i), outside the loop for efficiency.
 			# Note: this won't work for every likelihood function.
 			b_i_distances = stats.norm(0, self.input.sd_B).rvs(size=max_iterations)
@@ -291,10 +292,10 @@ class SimulationRun:
 		if "PYTEST_CURRENT_TEST" in os.environ:
 			return
 		utils.print_wrapped(
-			f"\nFor each iteration_explicit_b i of the simulation, we draw a true value T_i from the prior, and we draw "
+			f"\nFor each iteration i of the simulation, we draw a true value T_i from the prior, and we draw "
 			"an estimate b_i from Normal(T_i,sd(B)). The decision-maker cannot observe T_i, their subjective "
-			"posterior expected value is E[T|b_i]. E[T|b_i] and P(T|b_i > bar) are only computed if "
-			"running an 'explicit' simulation. 'd_1' is the bar, and 'd_2' "
+			"posterior expected value is E[T|b_i]. E[T|b_i] and P(T>bar|b_i) are only computed if "
+			"running an explicit bayesian update. 'd_1' is the bar, and 'd_2' "
 			"is the object of study.\n")
 		# Once the display.max_rows is exceeded, the display.min_rows options determines how many rows are shown in
 		# the truncated repr.
