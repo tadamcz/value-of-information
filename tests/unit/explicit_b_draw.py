@@ -26,7 +26,7 @@ def helper(T, sd_B, bar, prior_T, prior_T_ev, b_i_draws):
 @pytest.mark.parametrize('params',
 						 argvalues=gen_lgn_n.linsp(4) + gen_n_n.linsp(6),
 						 ids=shared.sim_param_idfn)
-def test(params):
+def test(params, random_seed):
 	"""
 	Compare mean VOI with or without explicit b_i draws.
 	"""

@@ -8,7 +8,7 @@ from value_of_information.voi import solve_threshold_b
 
 
 @pytest.mark.parametrize('params', gen_lgn_n.linsp(4) + gen_n_n.linsp(6), ids=shared.sim_param_idfn)
-def test_integral(params):
+def test_integral(params, random_seed):
 	"""
 	Based on the direct simplified expression for `VOI(t) = E_B[VOI(T,B) | T=t]` (see README and shared.py).
 

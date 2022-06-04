@@ -14,7 +14,7 @@ def chunks(lst, n):
 		yield lst[i:i + n]
 
 
-def test():
+def test(random_seed):
 	"""
 	Run lots of simulations, and check that the distribution of mean VOIs across simulations is approximately normal
 	with the expected mean and variance (using the Kolmogorov-Smirnov statistic).
