@@ -5,6 +5,12 @@ It also lets you do a cost-benefit analysis: weighing the costs of the informati
 
 A simplified interface to this package is available at [valueofinfo.com](https://valueofinfo.com/).
 
+# Tests
+This package has a robust set of unit tests and end-to-end tests.
+
+[`tadamcz/bayes-continuous`](https://github.com/tadamcz/bayes-continuous) is a dependency of this package used to compute
+the Bayesian updates by numerical integration. It has its own set of tests, based on closed-form expressions that are available for [conjugate priors](https://en.wikipedia.org/wiki/Conjugate_prior).
+
 ## Background
 When we gain information about a decision-relevant quantity, that information may improve the decision we ultimately
 make. The value of the (expected) improvement in the decision is
