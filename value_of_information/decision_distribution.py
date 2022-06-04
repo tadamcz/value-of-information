@@ -12,7 +12,7 @@ def with_signal(prior_T, t, sd_B, bar, threshold=None, explicit_bayes=False):
 
 def via_explicit_bayes(prior_T, sd_B, bar):
 	# There should generally not be a reason to reach this path, but it could be included
-	# in the future for completeness and to give another way to test result consistency
+	# in the future for completeness and to give another way to test_infinite_precision result consistency
 	raise NotImplementedError
 
 

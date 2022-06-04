@@ -1,6 +1,9 @@
+from unittest.mock import patch
+
 import pytest
 from scipy import stats
 
+from tests import shared
 from value_of_information import voi
 
 
@@ -24,7 +27,7 @@ def bar(request):
 	return request.param
 
 
-def test_solve_for_threshold_b(prior_mu, prior_sigma, sd_B, bar):
+def test_closed_form(prior_mu, prior_sigma, sd_B, bar):
 	"""
 	Closed-form expression for the threshold value `b_*`. See README.
 	"""
@@ -34,3 +37,18 @@ def test_solve_for_threshold_b(prior_mu, prior_sigma, sd_B, bar):
 	prior = stats.norm(loc=prior_mu, scale=prior_sigma)
 
 	assert voi.solve_threshold_b(prior, sd_B, bar) == pytest.approx(closed_form, rel=1 / 100_000)
+
+
+def test_infinite_precision(prior_mu, prior_sigma, bar):
+	"""
+	If the signal is infinitely precise, then we can ignore the prior: we choose the object of study iff b>bar
+	"""
+	sd_B = 1e-12
+
+	prior = stats.norm(loc=prior_mu, scale=prior_sigma)
+	with patch('value_of_information.bayes.posterior') as patched_posterior:
+		patched_posterior.side_effect = shared.normal_normal_closed_form
+		solution = voi.solve_threshold_b(prior, sd_B, bar)
+	assert solution == pytest.approx(bar, rel=1/1000)
+
+
