@@ -1,12 +1,14 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import bayes_continuous.utils
 import numpy as np
 from bayes_continuous.likelihood_func import NormalLikelihood
+from bayes_continuous.utils import is_frozen_normal
 from scipy import stats
 
 from value_of_information.rounding import round_sig
-from value_of_information.simulation import SimulationInputs
+from value_of_information.simulation import SimulationParameters
+from value_of_information.voi import solve_threshold_b
 
 
 def get_location_scale(distribution: stats._distn_infrastructure.rv_frozen):
@@ -35,17 +37,21 @@ def normal_normal_closed_form(normal_prior, normal_likelihood):
 	return mock_distribution
 
 
-def simulation_input_idfn(inputs: SimulationInputs):
-	pri_loc, pri_scale = get_location_scale(inputs.prior_T)
-	return f"fam={inputs.prior_family()}, bar={round_sig(inputs.bar)}, E[T]~={round_sig(inputs.prior_ev)}, T_loc={round_sig(pri_loc)}, T_scale={round_sig(pri_scale)}, sd(B)~={round_sig(inputs.sd_B)}"
+def sim_param_idfn(inputs: SimulationParameters):
+	try:
+		pri_loc, pri_scale = get_location_scale(inputs.prior_T)
+		loc_scale_string = f"T_loc={round_sig(pri_loc)}, T_scale={round_sig(pri_scale)},"
+	except AttributeError:
+		loc_scale_string = ""
 
+	if inputs.prior_family() == "lognorm_gen":
+		fam = "lognorm"
+	elif inputs.prior_family() == "norm_gen":
+		fam = "norm"
+	else:
+		fam = inputs.prior_family()
 
-def rel_idfn(p):
-	return f"rel={p}"
-
-
-def iter_idfn(p):
-	return f"iter={p}"
+	return f"fam={fam}, bar={round_sig(inputs.bar)}, E[T]~={round_sig(inputs.prior_T_ev)}, {loc_scale_string} sd(B)~={round_sig(inputs.sd_B)}"
 
 
 def is_decreasing(array):
@@ -56,3 +62,31 @@ def is_decreasing(array):
 def is_increasing(array):
 	diff = np.diff(array)
 	return np.all(diff >= 0)
+
+
+def expected_voi_t(t, threshold_b, sd_B, bar, prior_ev):
+	"""
+	Direct simplified expression. Currently, it's only used in tests, because for the simulation
+	we want to be able to store and display the building blocks of this expression.
+
+	VOI(t) = E_B[VOI(T,B) | T=t] = F(b_*) * (bar-t) + t - U(decision_0, t)
+	"""
+	if prior_ev > bar:
+		payoff_no_signal = t
+	else:
+		payoff_no_signal = bar
+
+	return stats.norm.cdf(threshold_b, loc=t, scale=sd_B) * (bar - t) + t - payoff_no_signal
+
+
+def patched_threshold_b(prior_T, sd_B, bar):
+	"""
+	Use patch for performance
+	"""
+	if is_frozen_normal(prior_T):
+		with patch('value_of_information.bayes.posterior') as patched_posterior:
+			patched_posterior.side_effect = normal_normal_closed_form
+			threshold_b = solve_threshold_b(prior_T, sd_B, bar)
+	else:
+		threshold_b = solve_threshold_b(prior_T, sd_B, bar)
+	return threshold_b

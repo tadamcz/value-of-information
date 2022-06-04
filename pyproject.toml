@@ -14,6 +14,7 @@ pandas = "^1.4.1"
 metalogistic = "^0.0.9"
 sigfig = "^1.3.0"
 pytest-xdist = "^2.5.0"
+pytest-kwparametrize = "^0.0.3"
 
 [tool.poetry.dev-dependencies]
 
