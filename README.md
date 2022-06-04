@@ -8,6 +8,53 @@ that may be improved by the information.
 
 A simplified interface to this package is available at [valueofinfo.com](https://valueofinfo.com/).
 
+# Usage
+
+See `example.py`:
+
+```python
+prior_mu, prior_sigma = 1, 1
+
+prior = lognormal(prior_mu, prior_sigma)
+
+params = SimulationParameters(
+	prior=prior,
+	sd_B=10,
+	bar=6)
+
+simulation_run = SimulationExecutor(params).execute()
+
+cb_params = CostBenefitParameters(
+	value_units="utils",
+	money_units="M$",
+	capital=100,
+	signal_cost=5,
+)
+
+CostBenefitsExecutor(inputs=cb_params, simulation_run=simulation_run).execute()
+```
+
+# Installation
+
+Clone:
+
+```shell
+git clone https://github.com/tadamcz/value-of-information
+cd value-of-information
+```
+
+Set up virtual environment:
+
+```shell
+poetry install
+```
+
+Run example
+
+```shell
+poetry run python example.py
+```
+
 # Tests
 
 This package has a robust set of unit tests and end-to-end tests.
@@ -234,52 +281,6 @@ is the main contribution of this package.
 The console output should be relatively self-explanatory. The calculations can be read
 in [`signal_cost_benefit.py`](value_of_information/cost_benefit.py).
 
-# Installation
-
-Clone:
-
-```shell
-git clone https://github.com/tadamcz/value-of-information
-cd value-of-information
-```
-
-Set up virtual environment:
-
-```shell
-poetry install
-```
-
-Run example
-
-```shell
-poetry run python example.py
-```
-
-# Usage
-
-See `example.py`:
-
-```python
-prior_mu, prior_sigma = 1, 1
-
-prior = lognormal(prior_mu, prior_sigma)
-
-params = SimulationParameters(
-	prior=prior,
-	sd_B=10,
-	bar=6)
-
-simulation_run = SimulationExecutor(params).execute()
-
-cb_params = CostBenefitParameters(
-	value_units="utils",
-	money_units="M$",
-	capital=100,
-	signal_cost=5,
-)
-
-CostBenefitsExecutor(inputs=cb_params, simulation_run=simulation_run).execute()
-```
 
 # Run tests
 
