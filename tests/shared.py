@@ -1,4 +1,3 @@
-from functools import lru_cache
 from unittest.mock import Mock, patch
 
 import bayes_continuous.utils
@@ -40,15 +39,14 @@ def normal_normal_closed_form(normal_prior, normal_likelihood):
 
 def sim_param_idfn(inputs: SimulationInputs):
 	pri_loc, pri_scale = get_location_scale(inputs.prior_T)
-	return f"fam={inputs.prior_family()}, bar={round_sig(inputs.bar)}, E[T]~={round_sig(inputs.prior_T_ev)}, T_loc={round_sig(pri_loc)}, T_scale={round_sig(pri_scale)}, sd(B)~={round_sig(inputs.sd_B)}"
+	if inputs.prior_family() == "lognorm_gen":
+		fam = "lognorm"
+	elif inputs.prior_family() == "norm_gen":
+		fam = "norm"
+	else:
+		fam = inputs.prior_family()
 
-
-def rel_idfn(p):
-	return f"rel={p}"
-
-
-def iter_idfn(p):
-	return f"iter={p}"
+	return f"fam={fam}, bar={round_sig(inputs.bar)}, E[T]~={round_sig(inputs.prior_T_ev)}, T_loc={round_sig(pri_loc)}, T_scale={round_sig(pri_scale)}, sd(B)~={round_sig(inputs.sd_B)}"
 
 
 def is_decreasing(array):

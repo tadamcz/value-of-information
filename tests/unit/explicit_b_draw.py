@@ -9,7 +9,6 @@ from value_of_information.voi import value_of_information
 
 
 def helper(T, sd_B, bar, prior_T, prior_T_ev, b_i_draws):
-
 	threshold_b = shared.patched_threshold_b(prior_T, sd_B, bar)
 
 	b_draw_no = value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b=None, threshold_b=threshold_b)[

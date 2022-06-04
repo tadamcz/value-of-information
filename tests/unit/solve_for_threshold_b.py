@@ -49,6 +49,4 @@ def test_infinite_precision(prior_mu, prior_sigma, bar):
 	with patch('value_of_information.bayes.posterior') as patched_posterior:
 		patched_posterior.side_effect = shared.normal_normal_closed_form
 		solution = voi.solve_threshold_b(prior, sd_B, bar)
-	assert solution == pytest.approx(bar, rel=1/1000)
-
-
+	assert solution == pytest.approx(bar, rel=1 / 1000)
