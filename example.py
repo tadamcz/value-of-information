@@ -1,13 +1,13 @@
-import numpy as np
-from scipy import stats
-
 from value_of_information.cost_benefit import CostBenefitsExecutor, CostBenefitParameters
 from value_of_information.simulation import SimulationParameters, SimulationExecutor
+from value_of_information.utils import lognormal
 
 prior_mu, prior_sigma = 1, 1
 
+prior = lognormal(prior_mu, prior_sigma)
+
 params = SimulationParameters(
-	prior=stats.lognorm(scale=np.exp(prior_mu), s=prior_sigma),
+	prior=prior,
 	sd_B=10,
 	bar=6)
 

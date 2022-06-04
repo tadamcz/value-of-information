@@ -22,7 +22,7 @@ def linsp_mu(n) -> List[SimulationParameters]:
 
 	for prior_mu in np.linspace(0.5, 2, num=n):
 		prior_sigma = 1
-		prior = stats.lognorm(scale=np.exp(prior_mu), s=prior_sigma)
+		prior = utils.lognormal(prior_mu, prior_sigma)
 		prior_expect, prior_sd = utils.get_lognormal_moments(prior_mu, prior_sigma)
 
 		i = SimulationParameters(
@@ -38,7 +38,7 @@ def linsp_distance_to_bar(n) -> List[SimulationParameters]:
 	inputs = []
 	prior_mu = 1
 	prior_sigma = 1
-	prior = stats.lognorm(scale=np.exp(prior_mu), s=prior_sigma)
+	prior = utils.lognormal(prior_mu, prior_sigma)
 	prior_expect, prior_sd = utils.get_lognormal_moments(prior_mu, prior_sigma)
 	prior_median = np.exp(prior_mu)
 

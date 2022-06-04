@@ -208,8 +208,10 @@ See `example.py`:
 ```python
 prior_mu, prior_sigma = 1, 1
 
+prior = lognormal(prior_mu, prior_sigma)
+
 params = SimulationParameters(
-	prior=stats.lognorm(scale=np.exp(prior_mu), s=prior_sigma),
+	prior=prior,
 	sd_B=10,
 	bar=6)
 

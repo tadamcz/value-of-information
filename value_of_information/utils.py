@@ -1,6 +1,7 @@
 import textwrap
 
 import numpy as np
+from scipy import stats
 
 
 def is_increasing(array, rtol=0, atol=0):
@@ -22,6 +23,13 @@ def get_lognormal_moments(mu, sigma):  # todo add tests
 	expect = np.exp(mu + sigma ** 2 / 2)
 
 	return expect, sd
+
+
+def lognormal(mu, sigma):
+	"""
+	Convenience wrapper
+	"""
+	return stats.lognorm(scale=np.exp(mu), s=sigma)
 
 
 def print_wrapped(string, width=120, replace_whitespace=False):
