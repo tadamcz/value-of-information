@@ -15,7 +15,7 @@ from value_of_information import utils
 from value_of_information.rounding import round_sig
 
 
-class SimulationInputs:
+class SimulationParameters:
 	def __init__(self, prior, bar, study_sample_size=None, population_std_dev=None, sd_B=None):
 		"""
 		We can call T the parameter over which we want to conduct inference,
@@ -58,7 +58,7 @@ class SimulationInputs:
 
 
 class SimulationExecutor:
-	def __init__(self, input: SimulationInputs, force_explicit_bayes=False, force_explicit_b_draw=True,
+	def __init__(self, input: SimulationParameters, force_explicit_bayes=False, force_explicit_b_draw=True,
 				 print_every=None):
 		self.input = input
 		self.do_explicit_bayes = force_explicit_bayes or (not self.input.likelihood_is_normal)
@@ -206,7 +206,7 @@ class SimulationExecutor:
 
 
 class SimulationRun:
-	def __init__(self, inputs: SimulationInputs, executor: SimulationExecutor):
+	def __init__(self, inputs: SimulationParameters, executor: SimulationExecutor):
 		self.input = inputs
 		self.iterations_data = []
 		self.do_explicit_bayes = executor.do_explicit_bayes

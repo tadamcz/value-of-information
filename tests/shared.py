@@ -7,7 +7,7 @@ from bayes_continuous.utils import is_frozen_normal
 from scipy import stats
 
 from value_of_information.rounding import round_sig
-from value_of_information.simulation import SimulationInputs
+from value_of_information.simulation import SimulationParameters
 from value_of_information.voi import solve_threshold_b
 
 
@@ -37,7 +37,7 @@ def normal_normal_closed_form(normal_prior, normal_likelihood):
 	return mock_distribution
 
 
-def sim_param_idfn(inputs: SimulationInputs):
+def sim_param_idfn(inputs: SimulationParameters):
 	try:
 		pri_loc, pri_scale = get_location_scale(inputs.prior_T)
 		loc_scale_string = f"T_loc={round_sig(pri_loc)}, T_scale={round_sig(pri_scale)},"

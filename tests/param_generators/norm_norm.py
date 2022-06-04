@@ -5,7 +5,7 @@ import numpy as np
 from scipy import stats
 
 from tests.seeds import RANDOM_SEEDS
-from value_of_information.simulation import SimulationInputs
+from value_of_information.simulation import SimulationParameters
 
 PRIOR_MEAN = 1.23
 PRIOR_SD = 10  # A large value makes the signal have >0 benefit more often, so convergence is easier
@@ -13,7 +13,7 @@ SD_B = 3
 BAR = 5
 
 
-def linsp(n) -> List[SimulationInputs]:
+def linsp(n) -> List[SimulationParameters]:
 	"""
 	Linearly spaced parameters.
 	"""
@@ -23,14 +23,14 @@ def linsp(n) -> List[SimulationInputs]:
 	return inputs
 
 
-def linsp_distance_to_bar(n) -> List[SimulationInputs]:
+def linsp_distance_to_bar(n) -> List[SimulationParameters]:
 	inputs = []
 	for distance_to_bar in np.linspace(-PRIOR_SD, PRIOR_SD, num=n):
 		bar = 1
 		prior_mean = bar + distance_to_bar
 
 		prior = stats.norm(prior_mean, PRIOR_SD)
-		i = SimulationInputs(
+		i = SimulationParameters(
 			prior=prior,
 			sd_B=SD_B,
 			bar=bar
@@ -39,11 +39,11 @@ def linsp_distance_to_bar(n) -> List[SimulationInputs]:
 	return inputs
 
 
-def linsp_prior_sd(n) -> List[SimulationInputs]:
+def linsp_prior_sd(n) -> List[SimulationParameters]:
 	inputs = []
 	for prior_stdev in np.linspace(PRIOR_SD, 2 * PRIOR_SD, num=n):
 		prior = stats.norm(PRIOR_MEAN, prior_stdev)
-		i = SimulationInputs(
+		i = SimulationParameters(
 			prior=prior,
 			sd_B=SD_B,
 			bar=BAR
@@ -56,7 +56,7 @@ def linsp_sd_B(n):
 	inputs = []
 	for sd_B in np.linspace(3, 10, num=n):
 		prior = stats.norm(PRIOR_MEAN, PRIOR_SD)
-		i = SimulationInputs(
+		i = SimulationParameters(
 			prior=prior,
 			sd_B=sd_B,
 			bar=BAR
@@ -65,7 +65,7 @@ def linsp_sd_B(n):
 	return inputs
 
 
-def from_seed(n) -> List[SimulationInputs]:
+def from_seed(n) -> List[SimulationParameters]:
 	"""
 	Pseudo-randomly generated parameters, with fixed seeds for reproducibility.
 	"""
@@ -88,7 +88,7 @@ def from_seed(n) -> List[SimulationInputs]:
 			'sd_B': sd_B,
 			'bar': bar,
 		}
-		inputs.append(SimulationInputs(**kwargs))
+		inputs.append(SimulationParameters(**kwargs))
 	return inputs
 
 

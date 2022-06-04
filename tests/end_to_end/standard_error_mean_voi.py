@@ -4,7 +4,7 @@ from scipy import stats
 from scipy.stats import kstest
 
 from tests import shared
-from value_of_information.simulation import SimulationInputs, SimulationExecutor, SimulationRun
+from value_of_information.simulation import SimulationParameters, SimulationExecutor, SimulationRun
 
 
 def chunks(lst, n):
@@ -18,7 +18,7 @@ def test(random_seed):
 	Run lots of simulations, and check that the distribution of mean VOIs across simulations is approximately normal
 	with the expected mean and variance (using the Kolmogorov-Smirnov statistic).
 	"""
-	inputs = SimulationInputs(
+	inputs = SimulationParameters(
 		prior=stats.norm(1, 10),
 		sd_B=1,
 		bar=2)

@@ -180,7 +180,7 @@ The cost-benefit analysis assumes:
 
 This model is well-suited when choosing between different options that can absorb flexible amounts of capital (e.g. venture capital, ad spend, or philanthropy). However, it should be easy to model the costs and benefits differently, while leaving unchanged the functionality concerned with quantifying the value of information, which is more general and is the main contribution of this package. 
 
-The console output should be relatively self-explanatory. The calculations can be read in [`signal_cost_benefit.py`](value_of_information/signal_cost_benefit.py).
+The console output should be relatively self-explanatory. The calculations can be read in [`signal_cost_benefit.py`](value_of_information/cost_benefit.py).
 
 # Installation
 
@@ -208,21 +208,21 @@ See `example.py`:
 ```python
 prior_mu, prior_sigma = 1, 1
 
-inputs = SimulationInputs(
+params = SimulationParameters(
 	prior=stats.lognorm(scale=np.exp(prior_mu), s=prior_sigma),
 	sd_B=10,
 	bar=6)
 
-simulation_run = SimulationExecutor(inputs).execute()
+simulation_run = SimulationExecutor(params).execute()
 
-cb_inputs = CostBenefitInputs(
+cb_params = CostBenefitParameters(
 	value_units="utils",
 	money_units="M$",
 	capital=100,
 	signal_cost=5,
 )
 
-CostBenefitsExecutor(inputs=cb_inputs, simulation_run=simulation_run).execute()
+CostBenefitsExecutor(inputs=cb_params, simulation_run=simulation_run).execute()
 ```
 
 # Run tests

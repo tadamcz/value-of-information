@@ -4,10 +4,10 @@ import numpy as np
 from scipy import stats
 
 from value_of_information import utils
-from value_of_information.simulation import SimulationInputs
+from value_of_information.simulation import SimulationParameters
 
 
-def linsp(n) -> List[SimulationInputs]:
+def linsp(n) -> List[SimulationParameters]:
 	"""
 	Linearly spaced parameters.
 	"""
@@ -17,7 +17,7 @@ def linsp(n) -> List[SimulationInputs]:
 	return inputs
 
 
-def linsp_mu(n) -> List[SimulationInputs]:
+def linsp_mu(n) -> List[SimulationParameters]:
 	inputs = []
 
 	for prior_mu in np.linspace(0.5, 2, num=n):
@@ -25,7 +25,7 @@ def linsp_mu(n) -> List[SimulationInputs]:
 		prior = stats.lognorm(scale=np.exp(prior_mu), s=prior_sigma)
 		prior_expect, prior_sd = utils.get_lognormal_moments(prior_mu, prior_sigma)
 
-		i = SimulationInputs(
+		i = SimulationParameters(
 			prior=prior,
 			sd_B=10,
 			bar=prior_expect + 1 * prior_sd
@@ -34,7 +34,7 @@ def linsp_mu(n) -> List[SimulationInputs]:
 	return inputs
 
 
-def linsp_distance_to_bar(n) -> List[SimulationInputs]:
+def linsp_distance_to_bar(n) -> List[SimulationParameters]:
 	inputs = []
 	prior_mu = 1
 	prior_sigma = 1
@@ -43,7 +43,7 @@ def linsp_distance_to_bar(n) -> List[SimulationInputs]:
 	prior_median = np.exp(prior_mu)
 
 	for bar in np.linspace(prior_expect, prior_expect + 3 * prior_sd, num=n):
-		i = SimulationInputs(
+		i = SimulationParameters(
 			prior=prior,
 			sd_B=10,
 			bar=bar

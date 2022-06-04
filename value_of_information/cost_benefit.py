@@ -7,7 +7,7 @@ from value_of_information import utils
 from value_of_information.simulation import SimulationRun
 
 
-class CostBenefitInputs:
+class CostBenefitParameters:
 	def __init__(self, value_units, money_units, capital, signal_cost):
 		"""
 		:param value_units: For example: "utils", "multiples of GiveDirectly", or "lives saved"
