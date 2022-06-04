@@ -18,8 +18,8 @@ def helper(params):
 
 	threshold_b = solve_threshold_b(prior_T, sd_B, bar)
 
-	for T in np.linspace(prior_T.ppf(0.01), prior_T.ppf(0.99), num=5):
-		for b in np.linspace(T - 5 * sd_B, T + 5 * sd_B, num=5):
+	for T in np.linspace(prior_T.ppf(0.05), prior_T.ppf(0.95), num=5):
+		for b in np.linspace(T - 3 * sd_B, T + 3 * sd_B, num=5):
 			threshold = value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b, threshold_b=threshold_b)
 			explicit = value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b, explicit_bayes=True)
 

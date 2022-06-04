@@ -8,7 +8,7 @@ from value_of_information.simulation import SimulationParameters
 def gen() -> List[SimulationParameters]:
 	quantiles_array = [
 		([0.1, 0.5, 0.9], [-20, -1, 50]),
-		([0.1, 0.5, 0.9], [1, 5, 30]),
+		([0.1, 0.5, 0.9], [1, 5, 15]),
 	]
 
 	parameters = []
