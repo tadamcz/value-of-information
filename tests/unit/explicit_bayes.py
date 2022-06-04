@@ -1,19 +1,18 @@
 import numpy as np
 import pytest
 
-import tests.param_generators.norm_norm as gen_norm_norm
+import tests.param_generators.norm_norm as gen_n_n
 import tests.shared as shared
 from value_of_information.voi import solve_threshold_b
 from value_of_information.voi import value_of_information
 
 
-@pytest.mark.parametrize('simulation_inputs',
-						 gen_norm_norm.linsp_distance_to_bar(2), ids=shared.simulation_input_idfn)
-def test(simulation_inputs):
-	sd_B = simulation_inputs.sd_B
-	bar = simulation_inputs.bar
-	prior_T = simulation_inputs.prior_T
-	prior_T_ev = simulation_inputs.prior_T_ev
+@pytest.mark.parametrize('params', gen_n_n.linsp_distance_to_bar(2), ids=shared.sim_param_idfn)
+def test(params):
+	sd_B = params.sd_B
+	bar = params.bar
+	prior_T = params.prior_T
+	prior_T_ev = params.prior_T_ev
 
 	threshold_b = solve_threshold_b(prior_T, sd_B, bar)
 

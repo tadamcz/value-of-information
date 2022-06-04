@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 import tests.shared as shared
-from tests.param_generators import norm_norm as gen_norm_norm
+from tests.param_generators import norm_norm as gen_n_n
 from value_of_information.voi import value_of_information, solve_threshold_b
 
 
@@ -27,7 +27,7 @@ class TestInfiniteBar:
 				voi = value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b, threshold_b=threshold_b)
 				assert voi["VOI"] == 0
 
-	@pytest.mark.parametrize('params', gen_norm_norm.linsp(6), ids=shared.simulation_input_idfn)
+	@pytest.mark.parametrize('params', gen_n_n.linsp(6), ids=shared.sim_param_idfn)
 	def test_high(self, params):
 		"""
 		If both prior expected value and all values of posterior are less than the bar,
@@ -35,7 +35,7 @@ class TestInfiniteBar:
 		"""
 		self.helper(params, bar=1e9)
 
-	@pytest.mark.parametrize('params', gen_norm_norm.linsp(6), ids=shared.simulation_input_idfn)
+	@pytest.mark.parametrize('params', gen_n_n.linsp(6), ids=shared.sim_param_idfn)
 	def test_low(self, params):
 		"""
 		If both prior expected value and all values of posterior are greater than the bar,
@@ -44,7 +44,7 @@ class TestInfiniteBar:
 		self.helper(params, bar=-1e9)
 
 
-@pytest.mark.parametrize('params', gen_norm_norm.linsp(6), ids=shared.simulation_input_idfn)
+@pytest.mark.parametrize('params', gen_n_n.linsp(6), ids=shared.sim_param_idfn)
 def test_infinite_precision(params):
 	"""
 	The posterior mean E[T|b] (calculated using explicit_bayes=True) is equal to T.

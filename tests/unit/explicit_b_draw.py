@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 from scipy import stats
 
-import tests.param_generators.lognorm_norm as gen_lognorm_norm
-import tests.param_generators.norm_norm as gen_norm_norm
+import tests.param_generators.lognorm_norm as gen_lgn_n
+import tests.param_generators.norm_norm as gen_n_n
 import tests.shared as shared
 from value_of_information.voi import value_of_information
 
@@ -24,8 +24,8 @@ def helper(T, sd_B, bar, prior_T, prior_T_ev, b_i_draws):
 
 
 @pytest.mark.parametrize('params',
-						 argvalues=gen_lognorm_norm.linsp(4) + gen_norm_norm.linsp(6),
-						 ids=shared.simulation_input_idfn)
+						 argvalues=gen_lgn_n.linsp(4) + gen_n_n.linsp(6),
+						 ids=shared.sim_param_idfn)
 def test(params):
 	"""
 	Compare mean VOI with or without explicit b_i draws.

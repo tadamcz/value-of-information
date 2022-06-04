@@ -3,7 +3,7 @@ import pytest
 from scipy import stats
 
 import tests.param_generators.lognorm_norm as gen_log_norm_norm
-import tests.param_generators.norm_norm as gen_norm_norm
+import tests.param_generators.norm_norm as gen_n_n
 from tests import shared
 from tests.shared import get_location_scale, is_decreasing, is_increasing, patched_threshold_b
 from value_of_information.voi import value_of_information
@@ -23,8 +23,7 @@ class Test_sdB:
 			vois.append(voi)
 		return vois
 
-	@pytest.mark.parametrize('params', gen_log_norm_norm.linsp(4) + gen_norm_norm.linsp(6),
-							 ids=shared.simulation_input_idfn)
+	@pytest.mark.parametrize('params', gen_log_norm_norm.linsp(4) + gen_n_n.linsp(6), ids=shared.sim_param_idfn)
 	def test(self, params):
 		central_sd_B = params.sd_B
 		prior_T = params.prior_T
@@ -52,8 +51,7 @@ class Test_sd_prior_T:
 			vois.append(voi)
 		return vois
 
-	@pytest.mark.parametrize('params', gen_log_norm_norm.linsp(4) + gen_norm_norm.linsp(6),
-							 ids=shared.simulation_input_idfn)
+	@pytest.mark.parametrize('params', gen_log_norm_norm.linsp(4) + gen_n_n.linsp(6), ids=shared.sim_param_idfn)
 	def test(self, params):
 		central_prior_T = params.prior_T
 		_, central_prior_sd, = get_location_scale(central_prior_T)
