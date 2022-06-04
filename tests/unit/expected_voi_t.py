@@ -2,12 +2,13 @@ import numpy as np
 import pytest
 
 import tests.param_generators.lognorm_norm as gen_lgn_n
+import tests.param_generators.metalog_norm as gen_mlog
 import tests.param_generators.norm_norm as gen_n_n
 from tests import shared
 from value_of_information.voi import solve_threshold_b, value_of_information
 
 
-@pytest.mark.parametrize('params', gen_n_n.linsp(6) + gen_lgn_n.linsp(6) + gen_n_n.from_seed(5),
+@pytest.mark.parametrize('params', gen_n_n.linsp(6) + gen_lgn_n.linsp(6) + gen_n_n.from_seed(5) + gen_mlog.gen(),
 						 ids=shared.sim_param_idfn)
 def test(params):
 	"""

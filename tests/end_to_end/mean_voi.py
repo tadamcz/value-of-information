@@ -2,12 +2,12 @@ import pytest
 from scipy import integrate
 
 from tests import shared
-from tests.param_generators import lognorm_norm as gen_lgn_n, norm_norm as gen_n_n
+from tests.param_generators import lognorm_norm as gen_lgn_n, norm_norm as gen_n_n, metalog_norm as gen_mlog
 from value_of_information.simulation import SimulationExecutor
 from value_of_information.voi import solve_threshold_b
 
 
-@pytest.mark.parametrize('params', gen_lgn_n.linsp(4) + gen_n_n.linsp(6), ids=shared.sim_param_idfn)
+@pytest.mark.parametrize('params', gen_lgn_n.linsp(4) + gen_n_n.linsp(6) + gen_mlog.gen(), ids=shared.sim_param_idfn)
 def test_integral(params, random_seed):
 	"""
 	Based on the direct simplified expression for `VOI(t) = E_B[VOI(T,B) | T=t]` (see README and shared.py).

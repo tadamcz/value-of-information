@@ -2,7 +2,8 @@ import numpy as np
 import pytest
 from scipy import stats
 
-import tests.param_generators.lognorm_norm as gen_log_norm_norm
+import tests.param_generators.lognorm_norm as gen_lgn_n
+import tests.param_generators.metalog_norm as gen_mlog
 import tests.param_generators.norm_norm as gen_n_n
 from tests import shared
 from tests.shared import get_location_scale, is_decreasing, is_increasing, patched_threshold_b
@@ -23,7 +24,8 @@ class Test_sdB:
 			vois.append(voi)
 		return vois
 
-	@pytest.mark.parametrize('params', gen_log_norm_norm.linsp(4) + gen_n_n.linsp(6), ids=shared.sim_param_idfn)
+	@pytest.mark.parametrize('params', gen_lgn_n.linsp(4) + gen_n_n.linsp(6) + gen_mlog.gen(),
+							 ids=shared.sim_param_idfn)
 	def test(self, params):
 		central_sd_B = params.sd_B
 		prior_T = params.prior_T
@@ -38,7 +40,7 @@ class Test_sdB:
 class Test_sd_prior_T:
 	"""
 	when prior_T_ev<bar (i.e. when without the signal, we would choose the bar), then
-	the value of the signal is increasing in sd(prior_T) for a normal prior.
+	the value of the signal is increasing in sd(prior_T).
 	"""
 
 	def helper(self, T, bar, prior_T_ev, central_prior_sd, sd_B, num_sds):
@@ -51,7 +53,7 @@ class Test_sd_prior_T:
 			vois.append(voi)
 		return vois
 
-	@pytest.mark.parametrize('params', gen_log_norm_norm.linsp(4) + gen_n_n.linsp(6), ids=shared.sim_param_idfn)
+	@pytest.mark.parametrize('params', gen_lgn_n.linsp(4) + gen_n_n.linsp(6), ids=shared.sim_param_idfn)
 	def test(self, params):
 		central_prior_T = params.prior_T
 		_, central_prior_sd, = get_location_scale(central_prior_T)

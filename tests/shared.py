@@ -38,7 +38,12 @@ def normal_normal_closed_form(normal_prior, normal_likelihood):
 
 
 def sim_param_idfn(inputs: SimulationInputs):
-	pri_loc, pri_scale = get_location_scale(inputs.prior_T)
+	try:
+		pri_loc, pri_scale = get_location_scale(inputs.prior_T)
+		loc_scale_string = f"T_loc={round_sig(pri_loc)}, T_scale={round_sig(pri_scale)},"
+	except AttributeError:
+		loc_scale_string = ""
+
 	if inputs.prior_family() == "lognorm_gen":
 		fam = "lognorm"
 	elif inputs.prior_family() == "norm_gen":
@@ -46,7 +51,7 @@ def sim_param_idfn(inputs: SimulationInputs):
 	else:
 		fam = inputs.prior_family()
 
-	return f"fam={fam}, bar={round_sig(inputs.bar)}, E[T]~={round_sig(inputs.prior_T_ev)}, T_loc={round_sig(pri_loc)}, T_scale={round_sig(pri_scale)}, sd(B)~={round_sig(inputs.sd_B)}"
+	return f"fam={fam}, bar={round_sig(inputs.bar)}, E[T]~={round_sig(inputs.prior_T_ev)}, {loc_scale_string} sd(B)~={round_sig(inputs.sd_B)}"
 
 
 def is_decreasing(array):
