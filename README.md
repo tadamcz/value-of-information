@@ -16,7 +16,7 @@ This package has a robust set of unit tests and end-to-end tests.
 compute the Bayesian updates by numerical integration. It has its own set of tests, based on closed-form expressions
 that are available for [conjugate priors](https://en.wikipedia.org/wiki/Conjugate_prior).
 
-## Background
+# Background
 
 When we gain information about a decision-relevant quantity, that information may improve the decision we ultimately
 make. The value of the (expected) improvement in the decision is the value of information.
@@ -61,7 +61,7 @@ a subscript means the expectation is taken with respect to the joint distributio
 version is helpful for remembering that `V` is a double integral, which will make it easier to understand this model
 both conceptually and computationally.
 
-## Model details
+# Model details
 
 In this package, we make some simplifying assumptions:
 
@@ -109,7 +109,7 @@ joint distribution of `T` and `B`.
 
 Drawing `b_i` can be disabled by setting `force_explicit_b_draw=False`
 
-### Remarks
+## Remarks
 
 Astute readers will have noticed another simplification. In calculating `V`, we take expectations over `T` according to
 the decision maker's prior `P(T)` (this is because `T_i`s are drawn from `P(T)` in step 1). In a subjective bayesian
@@ -125,7 +125,7 @@ Analogously, `V` is calculated according to the same values as the decision-make
 risk-neutral `U`-maximisation perspective, but this need not be so. (Technically this assumption is already present in
 the first section of this document).
 
-## Computational shortcut: skipping the decision-maker's Bayesian update
+# Computational shortcut: skipping the decision-maker's Bayesian update
 
 For each value of `T=t` that we consider (in an integral or a simulation), we have to calculate `P(d_2|T=t)`, the
 probability that the object of study will be chosen. Or, if considering pairs `t,b` drawn from the joint distribution,
@@ -157,7 +157,7 @@ The shortcut can be disabled by passing `force_explicit_bayes=True`
 Note: Currently `B~Normal(T,sd(B))` is the only distribution supported for `B`, so this computational shortcut is always
 applicable (i.e. "these cases" are all cases).
 
-## Expression for `VOI(t)` in terms of `b_*`
+# Expression for `VOI(t)` in terms of `b_*`
 
 We can now once again recapitulate and get the following expression:
 
@@ -177,7 +177,7 @@ VOI(t,B)
 = F(b_*) * (bar-t) + t - U(decision_0, t)
 ```
 
-## Closed-form expressions for `b_*`
+# Closed-form expressions for `b_*`
 
 If `P(T|B)` can be calculated in analytically, it follows that `b_*` can be calculated analytically. In the case of a
 normal prior over `T` with parameters `μ`, `σ` ([conjugate](https://en.wikipedia.org/wiki/Conjugate_prior) to the normal
@@ -205,17 +205,17 @@ expression.
 Tests of [`tadamcz/bayes-continuous`](https://github.com/tadamcz/bayes-continuous) (a dependency of this package) use
 closed form solutions as well.
 
-## Example: VOI for venture capital [TODO]
+# Example: VOI for venture capital [TODO]
 
 The previous section is quite abstract. It may be helpful to walk through a concrete example where our simplifications
 are reasonable, and the model is therefore a suitable one.
 
-## Estimating expectations
+# Estimating expectations
 
 These could be estimated either by Monte Carlo simulation, or by explicit numerical integration. The current version
 uses simulation.
 
-## Cost-benefit analysis
+# Cost-benefit analysis
 
 The cost-benefit analysis assumes:
 
