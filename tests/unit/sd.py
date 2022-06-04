@@ -1,28 +1,12 @@
-from unittest.mock import patch
-
 import numpy as np
 import pytest
-from bayes_continuous.utils import is_frozen_normal
 from scipy import stats
 
 import tests.param_generators.lognorm_norm as gen_log_norm_norm
 import tests.param_generators.norm_norm as gen_norm_norm
 from tests import shared
-from tests.shared import get_location_scale, is_decreasing, is_increasing
-from value_of_information.voi import value_of_information, solve_threshold_b
-
-
-def patched_threshold_b(prior_T, sd_B, bar):
-	"""
-	Use patch for performance
-	"""
-	if is_frozen_normal(prior_T):
-		with patch('value_of_information.bayes.posterior') as patched_posterior:
-			patched_posterior.side_effect = shared.normal_normal_closed_form
-			threshold_b = solve_threshold_b(prior_T, sd_B, bar)
-	else:
-		threshold_b = solve_threshold_b(prior_T, sd_B, bar)
-	return threshold_b
+from tests.shared import get_location_scale, is_decreasing, is_increasing, patched_threshold_b
+from value_of_information.voi import value_of_information
 
 
 class Test_sdB:

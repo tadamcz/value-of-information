@@ -1,12 +1,15 @@
-from unittest.mock import Mock
+from functools import lru_cache
+from unittest.mock import Mock, patch
 
 import bayes_continuous.utils
 import numpy as np
 from bayes_continuous.likelihood_func import NormalLikelihood
+from bayes_continuous.utils import is_frozen_normal
 from scipy import stats
 
 from value_of_information.rounding import round_sig
 from value_of_information.simulation import SimulationInputs
+from value_of_information.voi import solve_threshold_b
 
 
 def get_location_scale(distribution: stats._distn_infrastructure.rv_frozen):
@@ -71,3 +74,16 @@ def expected_voi_t(t, threshold_b, sd_B, bar, prior_ev):
 		payoff_no_signal = bar
 
 	return stats.norm.cdf(threshold_b, loc=t, scale=sd_B) * (bar - t) + t - payoff_no_signal
+
+
+def patched_threshold_b(prior_T, sd_B, bar):
+	"""
+	Use patch for performance
+	"""
+	if is_frozen_normal(prior_T):
+		with patch('value_of_information.bayes.posterior') as patched_posterior:
+			patched_posterior.side_effect = normal_normal_closed_form
+			threshold_b = solve_threshold_b(prior_T, sd_B, bar)
+	else:
+		threshold_b = solve_threshold_b(prior_T, sd_B, bar)
+	return threshold_b

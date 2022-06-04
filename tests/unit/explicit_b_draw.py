@@ -1,36 +1,45 @@
 import numpy as np
 import pytest
+from scipy import stats
 
 import tests.param_generators.lognorm_norm as gen_lognorm_norm
 import tests.param_generators.norm_norm as gen_norm_norm
 import tests.shared as shared
-from value_of_information.simulation import SimulationExecutor
+from value_of_information.voi import value_of_information
 
 
-def helper(inputs, iterations, relative_tolerance):
+def helper(T, sd_B, bar, prior_T, prior_T_ev, b_i_draws):
+
+	threshold_b = shared.patched_threshold_b(prior_T, sd_B, bar)
+
+	b_draw_no = value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b=None, threshold_b=threshold_b)[
+		"E_B[VOI]"]
+	b_draw_yes = []
+	for b in b_i_draws:
+		voi = value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b=b, threshold_b=threshold_b)["VOI"]
+		b_draw_yes.append(voi)
+
+	b_draw_yes = np.mean(b_draw_yes)
+	assert b_draw_no == pytest.approx(b_draw_yes, rel=5 / 100)
+
+
+@pytest.mark.parametrize('params',
+						 argvalues=gen_lognorm_norm.linsp(4) + gen_norm_norm.linsp(6),
+						 ids=shared.simulation_input_idfn)
+def test(params):
 	"""
 	Compare mean VOI with or without explicit b_i draws.
 	"""
-	b_draw_yes = SimulationExecutor(inputs, force_explicit_b_draw=True).execute(
-		iterations=iterations)
-	b_draw_no = SimulationExecutor(inputs, force_explicit_b_draw=False).execute(
-		iterations=iterations // 10)
+	sd_B = params.sd_B
+	bar = params.bar
+	prior_T = params.prior_T
+	prior_T_ev = params.prior_T_ev
 
-	assert np.all(b_draw_no.get_column('b_i').to_numpy() == None)
-	assert np.all(b_draw_yes.get_column('b_i').to_numpy() != None)
+	n_bi = 500_000
 
-	assert b_draw_yes.mean_voi() == pytest.approx(b_draw_no.mean_voi(), rel=relative_tolerance)
+	# Outside the T-loop below for efficiency
+	b_i_distance_draws = stats.norm(0, sd_B).rvs(n_bi)
 
-
-@pytest.mark.parametrize('simulation_inputs',
-						 argvalues=gen_lognorm_norm.linsp(4),
-						 ids=shared.simulation_input_idfn)
-def test_lognorm(simulation_inputs):
-	helper(inputs=simulation_inputs, iterations=1_000_000, relative_tolerance=10 / 100)
-
-
-@pytest.mark.parametrize('simulation_inputs',
-						 argvalues=gen_norm_norm.linsp(6),
-						 ids=shared.simulation_input_idfn)
-def test_norm(simulation_inputs):
-	helper(inputs=simulation_inputs, iterations=500_000, relative_tolerance=5 / 100)
+	for T in np.linspace(prior_T.ppf(0.95), prior_T.ppf(0.95), num=3):
+		b_i_draws = T + b_i_distance_draws
+		helper(T, sd_B, bar, prior_T, prior_T_ev, b_i_draws)

@@ -39,7 +39,7 @@ class TestInfiniteBar:
 		self.helper(bar=-1e9)
 
 
-class TestInfiniteSample:
+class TestInfiniteSample: # todo unit test
 	prior_mean = 1.23456
 	prior_sd = 1
 
