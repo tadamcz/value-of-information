@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from bayes_continuous.likelihood_func import NormalLikelihood
 from scipy import optimize
 from sortedcontainers import SortedDict
@@ -6,6 +8,7 @@ from value_of_information import utils, bayes, decision_explicit_b, decision_dis
 from value_of_information.rounding import round_sig
 
 
+@lru_cache(maxsize=100_000)
 def solve_threshold_b(prior_T, sd_B, bar):
 	"""
 
@@ -120,5 +123,3 @@ def value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b=None, threshold_b=
 		})
 
 	return dictionary
-
-
