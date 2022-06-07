@@ -45,7 +45,7 @@ def solve_threshold_b(prior_T, sd_B, bar):
 	right = p_0_9_T
 
 	# Setting the bracketing interval dynamically.
-	FACTOR = 2
+	FACTOR = 1.1
 
 	additive_step = 1
 	while f_to_solve(left) > 0.:
