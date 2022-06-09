@@ -50,12 +50,12 @@ def solve_threshold_b(prior_T, sd_B, bar):
 	additive_step = 1
 	while f_to_solve(left) > 0.:
 		additive_step = additive_step * FACTOR
-		left = left - additive_step
+		left, right = left - additive_step, left
 
 	additive_step = 1
 	while f_to_solve(right) < 0.:
 		additive_step = additive_step * FACTOR
-		right = right + additive_step
+		left, right = right, right + additive_step
 	# f_to_solve(left) and f_to_solve(right) now have opposite signs
 
 	print(f"Running equation solver between b={round_sig(left, 5)} and b={round_sig(right, 5)}   ---->")
