@@ -32,6 +32,21 @@ def lognormal(mu, sigma):
 	return stats.lognorm(scale=np.exp(mu), s=sigma)
 
 
+def mu_sigma_lognormal(scipy_lognorm_dist):
+	"""
+	Convenience wrapper
+	"""
+	try:
+		kwds = scipy_lognorm_dist.dist.kwds
+	except AttributeError:
+		kwds = scipy_lognorm_dist.kwds
+
+	return {
+		"mu": np.log(kwds["scale"]),
+		"sigma": kwds["s"],
+	}
+
+
 def print_wrapped(string, width=120, replace_whitespace=False):
 	array = textwrap.wrap(string, width, replace_whitespace=replace_whitespace, drop_whitespace=False)
 	print("\n".join(array))
