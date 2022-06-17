@@ -50,6 +50,14 @@ class CostBenefitsExecutor:  # todo add tests
 		value_without_signal = self.inputs.capital * no_signal_best_option
 		net_benefit_signal = value_with_signal - value_without_signal
 
+		# For willingness to pay, solve the equation:
+		#   value_with_signal = value_without_signal
+		#   capital_after_signal * (signal_benefit_per_usd_spent + no_signal_best_option) = capital * no_signal_best_option
+		#   (capital - signal_cost) * (signal_benefit_per_usd_spent + no_signal_best_option) = capital * no_signal_best_option
+		#   signal_cost = capital * signal_benefit_per_usd_spent / (no_signal_best_option + signal_benefit_per_usd_spent)
+		willingness_to_pay = self.inputs.capital * signal_benefit_per_usd_spent / (
+				no_signal_best_option + signal_benefit_per_usd_spent)
+
 		result = {
 			f"Best option without signal ({prior_units})": no_signal_best_option,
 			f"Capital ({self.inputs.money_units})": self.inputs.capital,
@@ -60,6 +68,7 @@ class CostBenefitsExecutor:  # todo add tests
 			f"Expected value with signal ({self.inputs.value_units})": value_with_signal,
 
 			f"Expected net benefit from signal ({self.inputs.value_units})": net_benefit_signal,
+			f"Willingness to pay for signal ({self.inputs.money_units})": willingness_to_pay,
 		}
 
 		with pd.option_context('display.width', None, 'display.max_colwidth', None, 'display.precision', 4):
