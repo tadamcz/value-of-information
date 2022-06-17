@@ -22,7 +22,7 @@ class SimulationParameters:
 		and B the random variable we observe. Realisations of B can be denoted b.
 		"""
 		self.prior_T = prior
-		self.prior_T_ev = self.prior_T.expect()
+		self.prior_T_ev = self.prior_T.mean()
 		if study_sample_size is None and population_std_dev is None:
 			if sd_B is None:
 				raise ValueError
