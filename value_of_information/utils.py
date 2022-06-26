@@ -47,6 +47,7 @@ def mu_sigma_lognormal(scipy_lognorm_dist):
 	}
 
 
+# todo: move this functionality out of the package and into the webapp only
 def print_wrapped(string, width=120, replace_whitespace=False):
 	array = textwrap.wrap(string, width, replace_whitespace=replace_whitespace, drop_whitespace=False)
 	print("\n".join(array))
