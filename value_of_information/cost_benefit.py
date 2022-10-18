@@ -50,7 +50,7 @@ class CostBenefitsExecutor:  # todo add tests
 		value_without_signal = self.inputs.capital * no_signal_best_option
 		net_benefit_signal = value_with_signal - value_without_signal
 
-		# For willingness to pay, solve the equation:
+		# For willingness to pay, solve the following equation for `signal_cost`:
 		#   value_with_signal = value_without_signal
 		#   capital_after_signal * (signal_benefit_per_usd_spent + no_signal_best_option) = capital * no_signal_best_option
 		#   (capital - signal_cost) * (signal_benefit_per_usd_spent + no_signal_best_option) = capital * no_signal_best_option
