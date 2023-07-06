@@ -103,7 +103,12 @@ class SimulationExecutor:
 			b_i_distances = stats.norm(0, self.input.sd_B).rvs(size=max_iterations)
 
 		if not self.do_explicit_bayes:
-			print_intermediate_every = self.print_every or 1000
+			if self.print_every is not None:
+				print_intermediate_every = self.print_every
+			elif max_iterations is not None:
+				print_intermediate_every = max_iterations // 10
+			else:
+				print_intermediate_every = 1000
 			threshold_b = voi.solve_threshold_b(self.input.prior_T, self.input.sd_B, self.input.bar)
 		else:
 			print_intermediate_every = self.print_every or 10
