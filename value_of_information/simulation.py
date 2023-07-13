@@ -263,7 +263,8 @@ class SimulationRun:
 			"is the object of study.\n")
 		# Once the display.max_rows is exceeded, the display.min_rows options determines how many rows are shown in
 		# the truncated repr.
-		with pd.option_context('display.max_columns', None, 'display.max_rows', 20, 'display.min_rows', 20,
+		with pd.option_context('display.max_columns', None, 'display.max_rows', 20,
+							   'display.min_rows', 20,
 							   'display.width', None, 'display.precision', 4):
 			print(pd.DataFrame(self.iterations_data))
 
@@ -275,34 +276,72 @@ class SimulationRun:
 			warnings.warn(
 				f"VOI is negative with {iterations} simulation iterations. Try more iterations?")
 
-		information = {
+		top_info = {
 			"Mean VOI": mean_benefit_signal,
 			"Standard error of mean VOI": sem_benefit_signal,
 		}
 
 		if self.do_explicit_bayes:
-			information.update({
-				"Mean of posterior expected values across iterations": self.get_column('E[T|b_i]').mean(),
+			top_info.update({
+				"Mean of posterior expected values across iterations": self.get_column(
+					'E[T|b_i]').mean(),
 			})
 
 		if self.do_explicit_b_draw:
-			information.update({
+			top_info.update({
 				"Fraction of iterations where E[T|b_i] > bar":
 					self.get_column("E[T|b_i]>bar").sum() / iterations,
 			})
 
-		quantiles = [0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, .9, 0.95, .99, .999]
-		for q in quantiles:
-			if self.do_explicit_b_draw:
-				key = f"Quantile {q} VOI"
-				information[key] = self.get_column('VOI').quantile(q)
-			else:
-				key = f"Quantile {q} E_B[VOI]"
-				information[key] = self.get_column('E_B[VOI]').quantile(q)
-
-		df = pd.DataFrame([information]).T
+		df = pd.DataFrame([top_info]).T
 		with pd.option_context('display.precision', 4):
 			print("\n" + df.to_string(header=False))
+
+		qs = [0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, .9, 0.95, .99, .999]
+		voi_quantiles_info = {}
+		# Quantiles of the VOI distribution
+		for q in qs:
+			if self.do_explicit_b_draw:
+				voi_key = "VOI"
+			else:
+				voi_key = "E_B[VOI]"
+			title = f"Quantiles of the {voi_key} distribution"
+			voi_quantiles_info[q] = self.get_column(voi_key).quantile(q)
+
+		df = pd.DataFrame([voi_quantiles_info]).T
+		print("\n" + title)
+		with pd.option_context('display.precision', 4):
+			print(df.to_string(header=False))
+
+		contributions_info = []
+		# Contributions to the VOI of deciles of T_i
+		for decile in range(0, 10):
+			if self.do_explicit_b_draw:
+				voi_key = "VOI"
+			else:
+				voi_key = "E_B[VOI]"
+			title = f"Contributions to {voi_key} of deciles of T_i"
+
+			dleft, dright = decile / 10, (decile + 1) / 10
+			tleft, tright = self.get_column("T_i").quantile([dleft, dright])
+			voi_sum = self.get_column(voi_key).sum()
+			voi_contribution = self.get_column(voi_key)[
+								   (self.get_column("T_i") >= tleft) & (
+											   self.get_column("T_i") < tright)
+								   ].sum() / voi_sum
+
+			contributions_info.append({
+				"Decile of T_i": f"{dleft} to {dright}",
+				"From T_i": tleft,
+				"To T_i": tright,
+				"Contribution to VOI": voi_contribution,
+			})
+
+		df = pd.DataFrame(contributions_info)
+		print("\n" + title)
+		print("Note: these deciles are from the simulation and do not exactly match the theoretical deciles of T")
+		with pd.option_context('display.precision', 4):
+			print(df.to_string(index=False))
 
 	def csv(self):
 		return pd.DataFrame(self.iterations_data).to_csv()

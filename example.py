@@ -1,15 +1,15 @@
+import scipy.stats
+
 from value_of_information.cost_benefit import CostBenefitsExecutor, CostBenefitParameters
 from value_of_information.simulation import SimulationParameters, SimulationExecutor
-from value_of_information.utils import lognormal
 
-prior_mu, prior_sigma = 1, 1
-
-prior = lognormal(prior_mu, prior_sigma)
+prior = scipy.stats.logistic(10, 5)
 
 params = SimulationParameters(
 	prior=prior,
-	sd_B=10,
-	bar=6)
+	sd_B=5,
+	bar=12,
+)
 
 simulation_run = SimulationExecutor(params).execute()
 
