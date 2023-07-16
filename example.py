@@ -11,7 +11,7 @@ params = SimulationParameters(
 	bar=12,
 )
 
-simulation_run = SimulationExecutor(params).execute()
+simulation_run = SimulationExecutor(params).execute(convergence_target=0.05)
 
 cb_params = CostBenefitParameters(
 	value_units="utils",

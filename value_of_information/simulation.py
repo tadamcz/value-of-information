@@ -314,13 +314,13 @@ class SimulationRun:
 			print(df.to_string(header=False))
 
 		contributions_info = []
-		# Contributions to the VOI of deciles of T_i
+		# Contribution to the VOI of deciles of T_i
 		for decile in range(0, 10):
 			if self.do_explicit_b_draw:
 				voi_key = "VOI"
 			else:
 				voi_key = "E_B[VOI]"
-			title = f"Contributions to {voi_key} of deciles of T_i"
+			title = f"Contribution to {voi_key} of deciles of T_i"
 
 			dleft, dright = decile / 10, (decile + 1) / 10
 			tleft, tright = self.get_column("T_i").quantile([dleft, dright])
@@ -342,6 +342,41 @@ class SimulationRun:
 		print("Note: these deciles are from the simulation and do not exactly match the theoretical deciles of T")
 		with pd.option_context('display.precision', 4):
 			print(df.to_string(index=False))
+
+		# Contribution to VOI of 1% bins [in 0-10% and 90-100%] of T_i
+		contributions_info = []
+		for bin in list(range(0, 10)) + list(range(90, 100)):
+			if self.do_explicit_b_draw:
+				voi_key = "VOI"
+			else:
+				voi_key = "E_B[VOI]"
+			title = f"Contribution to {voi_key} of 1% bins of T_i"
+
+			bleft, bright = bin / 100, (bin + 1) / 100
+			tleft, tright = self.get_column("T_i").quantile([bleft, bright])
+			voi_sum = self.get_column(voi_key).sum()
+			voi_contribution = self.get_column(voi_key)[
+								   (self.get_column("T_i") >= tleft) & (
+											   self.get_column("T_i") < tright)
+								   ].sum() / voi_sum
+
+			contributions_info.append({
+				"Bin of T_i": f"{bleft} to {bright}",
+				"From T_i": tleft,
+				"To T_i": tright,
+				"Contribution to VOI": voi_contribution,
+			})
+
+		df = pd.DataFrame(contributions_info)
+		print("\n" + title)
+		print(f"Note: these bins are 1/10th as wide as the deciles above. "
+			  f"Each bins contains {len(self.get_column(voi_key))//100} observations, and the "
+			  f"contributions may be imprecisely estimated.")
+		with pd.option_context('display.precision', 4):
+			print("\nContributions in the bottom 10%")
+			print(df.iloc[:10].to_string(index=False))
+			print("\nContributions in the top 10%")
+			print(df.iloc[10:].to_string(index=False))
 
 	def csv(self):
 		return pd.DataFrame(self.iterations_data).to_csv()
