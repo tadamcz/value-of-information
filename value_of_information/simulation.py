@@ -313,6 +313,9 @@ class SimulationRun:
 		print("\n" + title)
 		print(float_table.format_df(df, sig_figs=3).to_string(header=False))
 
+		print(
+			"\nNote: the boundaries of these bins (From T_i, To T_i) are from "
+			"the simulation and do not exactly match the theoretical quantiles of T")
 		contributions_info = []
 		# Contribution to the VOI of deciles of T_i
 		for decile in range(0, 10):
@@ -339,7 +342,6 @@ class SimulationRun:
 
 		df = pd.DataFrame(contributions_info)
 		print("\n" + title)
-		print("Note: these deciles are from the simulation and do not exactly match the theoretical deciles of T")
 		df["Contribution to VOI"] = df["Contribution to VOI"].map("{:.0%}".format)
 		df = float_table.format_df(df, sig_figs=3)
 		print(tabulate(df, headers="keys", tablefmt="github", showindex=False))
@@ -371,7 +373,7 @@ class SimulationRun:
 		df = pd.DataFrame(contributions_info)
 		print("\n" + title)
 		print(f"Note: these bins are 1/10th as wide as the deciles above. "
-			  f"Each bins contains {len(self.get_column(voi_key))//100} observations, and the "
+			  f"Each bin contains {len(self.get_column(voi_key))//100} observations, and the "
 			  f"contributions may be imprecisely estimated.")
 		df["Contribution to VOI"] = df["Contribution to VOI"].map("{:.0%}".format)
 		df = float_table.format_df(df, sig_figs=3)
