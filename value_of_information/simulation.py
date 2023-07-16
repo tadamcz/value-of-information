@@ -346,9 +346,9 @@ class SimulationRun:
 		df = float_table.format_df(df, sig_figs=3)
 		print(tabulate(df, headers="keys", tablefmt="github", showindex=False))
 
-		# Contribution to VOI of 1% bins [in 0-10% and 90-100%] of T_i
+		# Contribution to VOI of 1% bins of T_i
 		contributions_info = []
-		for bin in list(range(0, 10)) + list(range(90, 100)):
+		for bin in list(range(90, 100)):
 			if self.do_explicit_b_draw:
 				voi_key = "VOI"
 			else:
@@ -377,10 +377,8 @@ class SimulationRun:
 			  f"contributions may be imprecisely estimated.")
 		df["Contribution to VOI"] = df["Contribution to VOI"].map("{:.0%}".format)
 		df = float_table.format_df(df, sig_figs=3)
-		print("\nContributions in the bottom 10%")
-		print(tabulate(df.iloc[:10], headers="keys", tablefmt="github", showindex=False))
 		print("\nContributions in the top 10%")
-		print(tabulate(df.iloc[10:], headers="keys", tablefmt="github", showindex=False))
+		print(tabulate(df, headers="keys", tablefmt="github", showindex=False))
 
 	def csv(self):
 		return pd.DataFrame(self.iterations_data).to_csv()
