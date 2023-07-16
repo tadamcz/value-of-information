@@ -266,8 +266,7 @@ class SimulationRun:
 							   'display.min_rows', 20,
 							   'display.width', None):
 			df = pd.DataFrame(self.iterations_data)
-			df_to_print = pd.concat((df.iloc[:10], df.iloc[-10:]))
-			print(float_table.format_df(df_to_print, sig_figs=3))
+			print(df)
 
 		mean_benefit_signal = self.mean_voi()
 		sem_benefit_signal = self.standard_error_mean_voi()
