@@ -268,7 +268,7 @@ class SimulationRun:
 							   'display.width', None):
 			df = pd.DataFrame(self.iterations_data)
 			df_to_print = pd.concat((df.iloc[:10], df.iloc[-10:]))
-			print(float_table.format_df(df_to_print, sig_figs=3))
+			print(tabulate(float_table.format_df(df_to_print, sig_figs=3), headers='keys', tablefmt='github'))
 
 		mean_benefit_signal = self.mean_voi()
 		sem_benefit_signal = self.standard_error_mean_voi()
@@ -296,7 +296,7 @@ class SimulationRun:
 			})
 
 		df = pd.DataFrame([top_info]).T
-		print("\n"+float_table.format_df(df, sig_figs=3).to_string(header=False))
+		print("\n"+df.to_string(header=False))
 
 		qs = [0.05, 0.10, 0.25, 0.5, 0.75, 0.90, 0.95]
 		voi_quantiles_info = {}
