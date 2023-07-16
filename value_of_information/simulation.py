@@ -298,7 +298,7 @@ class SimulationRun:
 		df = pd.DataFrame([top_info]).T
 		print("\n"+float_table.format_df(df, sig_figs=3).to_string(header=False))
 
-		qs = [0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, .9, 0.95, .99, .999]
+		qs = [0.05, 0.10, 0.25, 0.5, 0.75, 0.90, 0.95]
 		voi_quantiles_info = {}
 		# Quantiles of the VOI distribution
 		for q in qs:
