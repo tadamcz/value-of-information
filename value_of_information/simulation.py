@@ -267,7 +267,8 @@ class SimulationRun:
 							   'display.min_rows', 20,
 							   'display.width', None):
 			df = pd.DataFrame(self.iterations_data)
-			print(float_table.format_df(df, sig_figs=3))
+			df_to_print = pd.concat((df.iloc[:10], df.iloc[-10:]))
+			print(float_table.format_df(df_to_print, sig_figs=3))
 
 		mean_benefit_signal = self.mean_voi()
 		sem_benefit_signal = self.standard_error_mean_voi()
@@ -295,7 +296,7 @@ class SimulationRun:
 			})
 
 		df = pd.DataFrame([top_info]).T
-		print(float_table.format_df(df, sig_figs=3).to_string(header=False))
+		print("\n"+float_table.format_df(df, sig_figs=3).to_string(header=False))
 
 		qs = [0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, .9, 0.95, .99, .999]
 		voi_quantiles_info = {}
