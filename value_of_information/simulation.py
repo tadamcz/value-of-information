@@ -9,11 +9,11 @@ import pandas as pd
 import scipy.stats
 from scipy import stats
 from scipy.stats._distn_infrastructure import rv_frozen
-
+import float_table
 from value_of_information import constants, voi
 from value_of_information import utils
 from value_of_information.rounding import round_sig
-
+from tabulate import tabulate
 
 class SimulationParameters:
 	def __init__(self, prior, bar, study_sample_size=None, population_std_dev=None, sd_B=None):
@@ -265,8 +265,9 @@ class SimulationRun:
 		# the truncated repr.
 		with pd.option_context('display.max_columns', None, 'display.max_rows', 20,
 							   'display.min_rows', 20,
-							   'display.width', None, 'display.precision', 4):
-			print(pd.DataFrame(self.iterations_data))
+							   'display.width', None):
+			df = pd.DataFrame(self.iterations_data)
+			print(float_table.format_df(df, sig_figs=3))
 
 		mean_benefit_signal = self.mean_voi()
 		sem_benefit_signal = self.standard_error_mean_voi()
@@ -294,8 +295,7 @@ class SimulationRun:
 			})
 
 		df = pd.DataFrame([top_info]).T
-		with pd.option_context('display.precision', 4):
-			print("\n" + df.to_string(header=False))
+		print(float_table.format_df(df, sig_figs=3).to_string(header=False))
 
 		qs = [0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, .9, 0.95, .99, .999]
 		voi_quantiles_info = {}
@@ -310,8 +310,7 @@ class SimulationRun:
 
 		df = pd.DataFrame([voi_quantiles_info]).T
 		print("\n" + title)
-		with pd.option_context('display.precision', 4):
-			print(df.to_string(header=False))
+		print(float_table.format_df(df, sig_figs=3).to_string(header=False))
 
 		contributions_info = []
 		# Contribution to the VOI of deciles of T_i
@@ -340,8 +339,9 @@ class SimulationRun:
 		df = pd.DataFrame(contributions_info)
 		print("\n" + title)
 		print("Note: these deciles are from the simulation and do not exactly match the theoretical deciles of T")
-		with pd.option_context('display.precision', 4):
-			print(df.to_string(index=False))
+		df["Contribution to VOI"] = df["Contribution to VOI"].map("{:.0%}".format)
+		df = float_table.format_df(df, sig_figs=3)
+		print(tabulate(df, headers="keys", tablefmt="github", showindex=False))
 
 		# Contribution to VOI of 1% bins [in 0-10% and 90-100%] of T_i
 		contributions_info = []
@@ -372,11 +372,12 @@ class SimulationRun:
 		print(f"Note: these bins are 1/10th as wide as the deciles above. "
 			  f"Each bins contains {len(self.get_column(voi_key))//100} observations, and the "
 			  f"contributions may be imprecisely estimated.")
-		with pd.option_context('display.precision', 4):
-			print("\nContributions in the bottom 10%")
-			print(df.iloc[:10].to_string(index=False))
-			print("\nContributions in the top 10%")
-			print(df.iloc[10:].to_string(index=False))
+		df["Contribution to VOI"] = df["Contribution to VOI"].map("{:.0%}".format)
+		df = float_table.format_df(df, sig_figs=3)
+		print("\nContributions in the bottom 10%")
+		print(tabulate(df.iloc[:10], headers="keys", tablefmt="github", showindex=False))
+		print("\nContributions in the top 10%")
+		print(tabulate(df.iloc[10:], headers="keys", tablefmt="github", showindex=False))
 
 	def csv(self):
 		return pd.DataFrame(self.iterations_data).to_csv()

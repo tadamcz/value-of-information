@@ -71,7 +71,7 @@ class CostBenefitsExecutor:  # todo add tests
 			f"Willingness to pay for signal ({self.inputs.money_units})": willingness_to_pay,
 		}
 
-		with pd.option_context('display.width', None, 'display.max_colwidth', None, 'display.precision', 4):
+		with pd.option_context('display.width', None, 'display.max_colwidth', None, "display.float_format", "{:.3g}".format):
 			df = pd.DataFrame([result]).T
 			print("\n" + df.to_string(header=False))
 
