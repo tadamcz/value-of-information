@@ -8,7 +8,7 @@ authors = ["tadamcz <tmkadamcz@gmail.com>"]
 bayes_continuous = {git = "https://github.com/tadamcz/bayes-continuous.git", rev = "26960486b84db4da6d32949c939822d882d06aba"}
 python = ">=3.8.12,<3.9"
 numpy = "^1.22.3"
-scipy = "^1.8.0"
+scipy = "^1.8.0,<1.10"
 pytest = "^7.0.1"
 pandas = "^1.4.1"
 sigfig = "^1.3.0"
