@@ -13,7 +13,6 @@ import float_table
 from value_of_information import constants, voi
 from value_of_information import utils
 from value_of_information.rounding import round_sig
-from tabulate import tabulate
 
 class SimulationParameters:
 	def __init__(self, prior, bar, study_sample_size=None, population_std_dev=None, sd_B=None):
@@ -268,7 +267,7 @@ class SimulationRun:
 							   'display.width', None):
 			df = pd.DataFrame(self.iterations_data)
 			df_to_print = pd.concat((df.iloc[:10], df.iloc[-10:]))
-			print(tabulate(float_table.format_df(df_to_print, sig_figs=3), headers='keys', tablefmt='github'))
+			print(float_table.format_df(df_to_print, sig_figs=3))
 
 		mean_benefit_signal = self.mean_voi()
 		sem_benefit_signal = self.standard_error_mean_voi()
@@ -344,7 +343,7 @@ class SimulationRun:
 		print("\n" + title)
 		df["Contribution to VOI"] = df["Contribution to VOI"].map("{:.0%}".format)
 		df = float_table.format_df(df, sig_figs=3)
-		print(tabulate(df, headers="keys", tablefmt="github", showindex=False))
+		print(df.to_string(index=False, col_space=10))
 
 		# Contribution to VOI of 1% bins of T_i
 		contributions_info = []
@@ -378,7 +377,7 @@ class SimulationRun:
 		df["Contribution to VOI"] = df["Contribution to VOI"].map("{:.0%}".format)
 		df = float_table.format_df(df, sig_figs=3)
 		print("\nContributions in the top 10%")
-		print(tabulate(df, headers="keys", tablefmt="github", showindex=False))
+		print(df.to_string(index=False, col_space=10))
 
 	def csv(self):
 		return pd.DataFrame(self.iterations_data).to_csv()
