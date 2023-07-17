@@ -366,8 +366,7 @@ class SimulationRun:
 
 		df = pd.DataFrame(contributions_info)
 		print("\n" + title)
-		utils.print_wrapped(f"Note: these bins are 1/10th as wide as the deciles above. "
-			  f"Each bin contains {len(self.get_column(voi_key))//100} observations, and the "
+		utils.print_wrapped(f"Each bin contains {len(self.get_column(voi_key))//100} observations, and the "
 			  f"contributions may be imprecisely estimated.")
 		df["Contribution to VOI"] = float_table.format_column(df["Contribution to VOI"], sig_figs=sig_figs, percent=True)
 		print("\nContributions in the top 10%")
