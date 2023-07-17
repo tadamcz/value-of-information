@@ -23,7 +23,7 @@ def helper(params):
 			threshold = value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b, threshold_b=threshold_b)
 			explicit = value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b, explicit_bayes=True)
 
-			for key in ['w_out_signal', 'payoff_w_out_signal', 'w_signal', 'payoff_w_signal', 'VOI']:
+			for key in ['no_sgnl', 'payoff_no_sgnl', 'yes_sgnl', 'payoff_yes_sgnl', 'VOI']:
 				assert threshold[key] == explicit[key]
 
 

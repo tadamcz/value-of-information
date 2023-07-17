@@ -96,8 +96,8 @@ def value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b=None, threshold_b=
 	dictionary = {
 		'T': T,
 		'b': b,
-		'w_out_signal': no_signal["decision"],
-		'payoff_w_out_signal': no_signal["payoff"],
+		'no_sgnl': no_signal["decision"],
+		'payoff_no_sgnl': no_signal["payoff"],
 	}
 
 	if explicit_bayes:
@@ -109,8 +109,8 @@ def value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b=None, threshold_b=
 
 	if explicit_b_draw:
 		dictionary.update({
-			'w_signal': with_signal["decision"],
-			'payoff_w_signal': with_signal["payoff"],
+			'yes_sgnl': with_signal["decision"],
+			'payoff_yes_sgnl': with_signal["payoff"],
 			'E[T|b]>bar': with_signal["decision"] == "d_2",
 			'VOI': with_signal["payoff"] - no_signal["payoff"],
 		})
@@ -118,7 +118,7 @@ def value_of_information(T, sd_B, bar, prior_T, prior_T_ev, b=None, threshold_b=
 		dictionary.update({
 			'P(d_1|T)': with_signal["pr_d_1"],
 			'P(d_2|T)': with_signal["pr_d_2"],
-			'E_B[payoff_w_signal]': with_signal["expected_payoff"],
+			'E_B[payoff_yes_sgnl]': with_signal["expected_payoff"],
 			'E_B[VOI]': with_signal["expected_payoff"] - no_signal["payoff"],
 		})
 
