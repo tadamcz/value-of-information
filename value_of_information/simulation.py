@@ -280,21 +280,17 @@ class SimulationRun:
 			"Mean VOI": mean_benefit_signal,
 			"Standard error of mean VOI": sem_benefit_signal,
 		}
+		df = pd.DataFrame([top_info]).T
+		print("\n" + float_table.tabulate_df(df, sig_figs=3, header=False))
 
 		if self.do_explicit_bayes:
-			top_info.update({
-				"Mean of posterior expected values across iterations": self.get_column(
-					'E[T|b_i]').mean(),
-			})
+			val = self.get_column(
+					'E[T|b_i]').mean()
+			print("Mean of posterior expected values across iterations", val)
 
 		if self.do_explicit_b_draw:
-			top_info.update({
-				"Fraction of iterations where E[T|b_i] > bar":
-					self.get_column("E[T|b_i]>bar").sum() / iterations,
-			})
-
-		df = pd.DataFrame([top_info]).T
-		print("\n"+df.to_string(header=False))
+			val = self.get_column("E[T|b_i]>bar").sum() / iterations
+			print(f"\nFraction of iterations where E[T|b_i] > bar: {val:.1%}")
 
 		qs = [0.05, 0.10, 0.25, 0.5, 0.75, 0.90, 0.95]
 		voi_quantiles_info = {}
@@ -309,7 +305,7 @@ class SimulationRun:
 
 		df = pd.DataFrame([voi_quantiles_info]).T
 		print("\n" + title)
-		print(float_table.format_df(df, sig_figs=3).to_string(header=False))
+		print(float_table.tabulate_df(df, sig_figs=3, header=False))
 
 		utils.print_wrapped(
 			"\nNote: the boundaries of these bins (From T_i, To T_i) are from "
@@ -340,9 +336,8 @@ class SimulationRun:
 
 		df = pd.DataFrame(contributions_info)
 		print("\n" + title)
-		df["Contribution to VOI"] = df["Contribution to VOI"].map("{:.0%}".format)
-		df = float_table.format_df(df, sig_figs=3)
-		print(df.to_string(index=False, col_space=10))
+		df["Contribution to VOI"] = float_table.format_column(df["Contribution to VOI"], sig_figs=3, percent=True)
+		print(float_table.tabulate_df(df, sig_figs=3, index=False))
 
 		# Contribution to VOI of 1% bins of T_i
 		contributions_info = []
@@ -373,10 +368,9 @@ class SimulationRun:
 		utils.print_wrapped(f"Note: these bins are 1/10th as wide as the deciles above. "
 			  f"Each bin contains {len(self.get_column(voi_key))//100} observations, and the "
 			  f"contributions may be imprecisely estimated.")
-		df["Contribution to VOI"] = df["Contribution to VOI"].map("{:.0%}".format)
-		df = float_table.format_df(df, sig_figs=3)
+		df["Contribution to VOI"] = float_table.format_column(df["Contribution to VOI"], sig_figs=3, percent=True)
 		print("\nContributions in the top 10%")
-		print(df.to_string(index=False, col_space=10))
+		print(float_table.tabulate_df(df, sig_figs=3, index=False))
 
 	def csv(self):
 		return pd.DataFrame(self.iterations_data).to_csv()
