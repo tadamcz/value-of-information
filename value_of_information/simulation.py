@@ -260,10 +260,11 @@ class SimulationRun:
 			"posterior expected value is E[T|b_i]. E[T|b_i] and P(T>bar|b_i) are only computed if "
 			"running an explicit bayesian update. 'd_1' is the bar, and 'd_2' "
 			"is the object of study.\n")
-		utils.print_wrapped("This is an excerpt from the simulation data:")
+		sig_figs = 4
+		utils.print_wrapped(f"This is an excerpt from the simulation data ({sig_figs} significant figures):")
 		df = pd.DataFrame(self.iterations_data)
 		df_to_print = pd.concat((df[:10], df[-10:]))
-		print(float_table.tabulate_df(df_to_print, sig_figs=3))
+		print(float_table.tabulate_df(df_to_print, sig_figs=sig_figs))
 
 		mean_benefit_signal = self.mean_voi()
 		sem_benefit_signal = self.standard_error_mean_voi()
@@ -273,12 +274,15 @@ class SimulationRun:
 			warnings.warn(
 				f"VOI is negative with {iterations} simulation iterations. Try more iterations?")
 
+		sig_figs = 3
+		print(f"\nNumbers below are generally rounded to {sig_figs} significant figures.")
+
 		top_info = {
 			"Mean VOI": mean_benefit_signal,
 			"Standard error of mean VOI": sem_benefit_signal,
 		}
 		df = pd.DataFrame([top_info]).T
-		print("\n" + float_table.tabulate_df(df, sig_figs=3, header=False))
+		print("\n" + float_table.tabulate_df(df, sig_figs=sig_figs, header=False))
 
 		if self.do_explicit_bayes:
 			val = self.get_column(
@@ -302,7 +306,7 @@ class SimulationRun:
 
 		df = pd.DataFrame([voi_quantiles_info]).T
 		print("\n" + title)
-		print(float_table.tabulate_df(df, sig_figs=3, header=False))
+		print(float_table.tabulate_df(df, sig_figs=sig_figs, header=False))
 
 		utils.print_wrapped(
 			"\nNote: the boundaries of these bins (From T_i, To T_i) are from "
@@ -333,8 +337,8 @@ class SimulationRun:
 
 		df = pd.DataFrame(contributions_info)
 		print("\n" + title)
-		df["Contribution to VOI"] = float_table.format_column(df["Contribution to VOI"], sig_figs=3, percent=True)
-		print(float_table.tabulate_df(df, sig_figs=3, index=False))
+		df["Contribution to VOI"] = float_table.format_column(df["Contribution to VOI"], sig_figs=sig_figs, percent=True)
+		print(float_table.tabulate_df(df, sig_figs=sig_figs, index=False))
 
 		# Contribution to VOI of 1% bins of T_i
 		contributions_info = []
@@ -365,9 +369,9 @@ class SimulationRun:
 		utils.print_wrapped(f"Note: these bins are 1/10th as wide as the deciles above. "
 			  f"Each bin contains {len(self.get_column(voi_key))//100} observations, and the "
 			  f"contributions may be imprecisely estimated.")
-		df["Contribution to VOI"] = float_table.format_column(df["Contribution to VOI"], sig_figs=3, percent=True)
+		df["Contribution to VOI"] = float_table.format_column(df["Contribution to VOI"], sig_figs=sig_figs, percent=True)
 		print("\nContributions in the top 10%")
-		print(float_table.tabulate_df(df, sig_figs=3, index=False))
+		print(float_table.tabulate_df(df, sig_figs=sig_figs, index=False))
 
 	def csv(self):
 		return pd.DataFrame(self.iterations_data).to_csv()
