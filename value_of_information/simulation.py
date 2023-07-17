@@ -260,13 +260,10 @@ class SimulationRun:
 			"posterior expected value is E[T|b_i]. E[T|b_i] and P(T>bar|b_i) are only computed if "
 			"running an explicit bayesian update. 'd_1' is the bar, and 'd_2' "
 			"is the object of study.\n")
-		# Once the display.max_rows is exceeded, the display.min_rows options determines how many rows are shown in
-		# the truncated repr.
-		with pd.option_context('display.max_columns', None, 'display.max_rows', 20,
-							   'display.min_rows', 20,
-							   'display.width', None):
-			df = pd.DataFrame(self.iterations_data)
-			print(df)
+		utils.print_wrapped("This is an excerpt from the simulation data:")
+		df = pd.DataFrame(self.iterations_data)
+		df_to_print = pd.concat((df[:10], df[-10:]))
+		print(float_table.tabulate_df(df_to_print, sig_figs=3))
 
 		mean_benefit_signal = self.mean_voi()
 		sem_benefit_signal = self.standard_error_mean_voi()
